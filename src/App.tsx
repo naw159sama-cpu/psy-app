@@ -5,6 +5,7 @@ import Patients from './ecrans/Patients'
 import FichePatient from './ecrans/FichePatient'
 import Argent from './ecrans/Argent'
 import Reglages from './ecrans/Reglages'
+import Rappels from './ecrans/Rappels'
 import FeuilleSeance from './composants/FeuilleSeance'
 import FeuilleChoixPatient from './composants/FeuilleChoixPatient'
 import FeuilleNouveauPatient from './composants/FeuilleNouveauPatient'
@@ -17,11 +18,12 @@ import {
 import { useDonnees, basculerMasquage } from './lib/store'
 import { aujourdhui, ajouterJours, dateLongue, jourDeIso } from './lib/dates'
 import { estDue } from './lib/argent'
+import { heurePassee, prochainJourARappeler, rappelsEnAttente } from './lib/rappels'
 import { initiales } from './lib/format'
 import { nomAffiche } from './lib/affichage'
 
 type Onglet = 'accueil' | 'agenda' | 'patients' | 'finances' | 'reglages'
-type Vue = { type: 'onglet' } | { type: 'patient'; id: string }
+type Vue = { type: 'onglet' } | { type: 'patient'; id: string } | { type: 'rappels' }
 type Panneau =
   | { type: 'seance'; id: string }
   | { type: 'choix'; date: string; creneau: number }
@@ -89,6 +91,16 @@ export default function App() {
     return notes.length + impayes.length
   }, [seances, today])
 
+  const jourARappeler = useMemo(
+    () => prochainJourARappeler(seances, ajouterJours(today, 1)),
+    [seances, today],
+  )
+  const rappelsRestants = useMemo(
+    () => (jourARappeler ? rappelsEnAttente(seances, patients, reglages, jourARappeler) : 0),
+    [seances, patients, reglages, jourARappeler],
+  )
+  const rappelsUrgents = rappelsRestants > 0 && heurePassee(reglages.heureRappelQuotidien)
+
   const ouvrirSeance = (id: string) => setPanneau({ type: 'seance', id })
   const creneauLibre = (date: string, creneau: number) => setPanneau({ type: 'choix', date, creneau })
   const ouvrirPatient = (id: string) => { setPanneau(null); setVue({ type: 'patient', id }) }
@@ -122,7 +134,14 @@ export default function App() {
   const patientOuvert = vue.type === 'patient'
     ? patients.find((x) => x.id === vue.id)
     : undefined
-  const enTete = vue.type === 'patient'
+  const enTete = vue.type === 'rappels'
+    ? {
+        surtitre: 'Messages aux patients',
+        titre: 'Rappels',
+        legende: 'Vous préparez, vous envoyez' as string | null,
+        retour: () => setVue({ type: 'onglet' }),
+      }
+    : vue.type === 'patient'
     ? {
         surtitre: 'Dossier clinique',
         titre: nomAffiche(patientOuvert, reglages.masquerNoms),
@@ -158,7 +177,7 @@ export default function App() {
           </button>
           <button
             className="bouton-rond"
-            aria-label={`Rappels${nbRappels > 0 ? ` (${nbRappels})` : ''}`}
+            aria-label={`À traiter${nbRappels > 0 ? ` (${nbRappels})` : ''}`}
             onClick={() => setPanneau({ type: 'rappels' })}
           >
             <IconeCloche taille={21} />
@@ -167,7 +186,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="contenu" key={vue.type === 'onglet' ? onglet : `patient-${vue.id}`}>
+      <main className="contenu" key={vue.type === 'onglet' ? onglet : vue.type === 'rappels' ? 'rappels' : `patient-${vue.id}`}>
         {enTete && (
           <div className="titre-page">
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
@@ -187,7 +206,12 @@ export default function App() {
           </div>
         )}
 
-        {vue.type === 'patient' ? (
+        {vue.type === 'rappels' ? (
+          <Rappels
+            jourInitial={jourARappeler}
+            onOuvrirPatient={(id) => setVue({ type: 'patient', id })}
+          />
+        ) : vue.type === 'patient' ? (
           <FichePatient
             patientId={vue.id}
             onOuvrirSeance={ouvrirSeance}
@@ -198,6 +222,10 @@ export default function App() {
             onOuvrirSeance={ouvrirSeance}
             onCreneauLibre={creneauLibre}
             onVoirAgenda={() => allerOnglet('agenda')}
+            onVoirRappels={() => setVue({ type: 'rappels' })}
+            rappelsRestants={rappelsRestants}
+            rappelsUrgents={rappelsUrgents}
+            jourARappeler={jourARappeler}
             onSouffle={() => setPanneau({ type: 'souffle' })}
           />
         ) : onglet === 'agenda' ? (

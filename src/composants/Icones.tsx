@@ -327,3 +327,39 @@ export function IconeGrille({ taille = 18 }: Props) {
     </svg>
   )
 }
+
+export function IconeCrayon({ taille = 16 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <path d="M16.4 4.2a2.1 2.1 0 0 1 3 3L9 17.6l-4 1 1-4Z" />
+      <path d="m14.6 6 3 3" />
+    </svg>
+  )
+}
+
+export function IconeCopier({ taille = 16 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <rect x="8.4" y="8.4" width="11.2" height="11.2" rx="2.2" />
+      <path d="M15.6 8.4V6.2a2.2 2.2 0 0 0-2.2-2.2H6.6a2.2 2.2 0 0 0-2.2 2.2v6.8a2.2 2.2 0 0 0 2.2 2.2h1.8" />
+    </svg>
+  )
+}
+
+/** Combiné dans une bulle : le pictogramme WhatsApp, redessiné au trait. */
+export function IconeWhatsApp({ taille = 17 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <path d="M3.6 20.4l1.3-4.2a8.2 8.2 0 1 1 3.1 3Z" />
+      <path d="M9.1 9.1c.3 1.9 1.6 3.4 3.4 4.1l.9-1.1 1.9.7c-.2 1.1-1.2 1.6-2.2 1.4a6.6 6.6 0 0 1-5-4.5c-.2-1 .3-2 1.4-2.2l.7 1.9Z" />
+    </svg>
+  )
+}
+
+export function IconeMessage({ taille = 16 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <path d="M20.4 12.6a7.4 7.4 0 0 1-8 7.4l-5 2 1.2-3.6a7.4 7.4 0 1 1 11.8-5.8Z" />
+    </svg>
+  )
+}

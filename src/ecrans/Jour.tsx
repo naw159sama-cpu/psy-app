@@ -7,14 +7,21 @@ import {
 import { estDue } from '../lib/argent'
 import { nomAffiche } from '../lib/affichage'
 import {
-  Chevron, IconeAgenda, IconeCadenas, IconeCheckSimple, IconeFeuille, IconeLecture,
-  IconeSouffle,
+  Chevron, IconeAgenda, IconeCadenas, IconeCheckSimple, IconeCloche, IconeFeuille,
+  IconeLecture, IconeSouffle,
 } from '../composants/Icones'
 
 interface Props {
   onOuvrirSeance: (seanceId: string) => void
   onCreneauLibre: (date: string, creneau: number) => void
   onVoirAgenda: () => void
+  onVoirRappels: () => void
+  /** Rappels du prochain jour de consultation encore à envoyer. */
+  rappelsRestants: number
+  /** L'heure de préparation est passée : la carte se met en avant. */
+  rappelsUrgents: boolean
+  /** Jour visé par ces rappels : le prochain qui porte des rendez-vous. */
+  jourARappeler: string | null
   onSouffle: () => void
 }
 
@@ -40,7 +47,10 @@ function resume(nbSeances: number, nbNotes: number, estAujourdhui: boolean): str
     : `${debut}, et des temps de respiration entre chacune.`
 }
 
-export default function Jour({ onOuvrirSeance, onCreneauLibre, onVoirAgenda, onSouffle }: Props) {
+export default function Jour({
+  onOuvrirSeance, onCreneauLibre, onVoirAgenda, onVoirRappels,
+  rappelsRestants, rappelsUrgents, jourARappeler, onSouffle,
+}: Props) {
   const { seances, patients, reglages } = useDonnees()
   const today = aujourdhui()
   const date = useMemo(
@@ -137,6 +147,26 @@ export default function Jour({ onOuvrirSeance, onCreneauLibre, onVoirAgenda, onS
           )}
         </div>
       </section>
+
+      {rappelsRestants > 0 && (
+        <button className={`carte-rappel-entree${rappelsUrgents ? ' urgente' : ''}`} onClick={onVoirRappels}>
+          <span className="disque grand"><IconeCloche taille={19} /></span>
+          <span className="entree-corps">
+            <span className="entree-titre">
+              {rappelsRestants} rappel{rappelsRestants > 1 ? 's' : ''} à envoyer
+              {jourARappeler === ajouterJours(today, 1)
+                ? ' pour demain'
+                : jourARappeler ? ` pour ${JOURS[jourDeIso(jourARappeler)]}` : ''}
+            </span>
+            <span className="entree-sous">
+              {rappelsUrgents
+                ? 'C’est le moment de les préparer'
+                : `À préparer vers ${reglages.heureRappelQuotidien}`}
+            </span>
+          </span>
+          <Chevron />
+        </button>
+      )}
 
       {!estAujourdhui && (
         <div className="note-contexte">

@@ -48,6 +48,10 @@ export default function FeuilleChoixPatient({ date, creneau, onFermer, onSeanceC
       statut: 'actif',
       anamnese: '',
       objectifs: [],
+      canalRappel: 'aucun',
+      consentementLe: null,
+      messageNeutreRenforce: false,
+      representant: null,
       tarifPerso: null,
     })
     placer(p.id)

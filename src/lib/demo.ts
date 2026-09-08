@@ -8,6 +8,9 @@ import { aujourdhui, ajouterJours, debutSemaine, jourDeIso } from './dates'
  */
 type Fiche = Pick<Patient, 'prenom' | 'motif' | 'adressePar' | 'statut' | 'dateNaissance'> & {
   objectifs: string[]
+  canal: Patient['canalRappel']
+  telephone: string
+  representant?: Patient['representant']
 }
 
 const FICHES: Fiche[] = [
@@ -15,31 +18,38 @@ const FICHES: Fiche[] = [
     prenom: 'Amina', motif: 'Anxiété généralisée', adressePar: 'Médecin traitant',
     statut: 'actif', dateNaissance: '1994-03-12',
     objectifs: ['Retrouver un sommeil continu', 'Reprendre les sorties du week-end'],
+    canal: 'whatsapp', telephone: '0551 23 45 67',
   },
   {
     prenom: 'Karim', motif: 'Difficultés scolaires', adressePar: 'Parents',
     statut: 'actif', dateNaissance: '2012-09-02',
     objectifs: ['Tenir trente minutes de devoirs', 'Renouer avec un camarade de classe'],
+    canal: 'whatsapp', telephone: '0770 11 22 33',
+    representant: { nom: 'Farida Démo', telephone: '0661 44 55 66', lien: 'mère' },
   },
   {
     prenom: 'Leila', motif: 'Deuil', adressePar: 'Bouche à oreille',
     statut: 'actif', dateNaissance: '1978-11-25',
     objectifs: ['Pouvoir parler de son frère sans s’effondrer', 'Reprendre le travail à mi-temps'],
+    canal: 'sms', telephone: '0555 66 77 88',
   },
   {
     prenom: 'Yacine', motif: 'Stress professionnel', adressePar: 'Instagram',
     statut: 'actif', dateNaissance: '1989-06-30',
     objectifs: ['Poser une limite claire à son responsable'],
+    canal: 'aucun', telephone: '0554 99 88 77',
   },
   {
     prenom: 'Nadia', motif: 'Troubles du sommeil', adressePar: 'Médecin traitant',
     statut: 'pause', dateNaissance: '1966-01-18',
     objectifs: [],
+    canal: 'whatsapp', telephone: '',
   },
   {
     prenom: 'Sofiane', motif: 'Estime de soi', adressePar: 'Ancien patient',
     statut: 'cloture', dateNaissance: '1999-04-07',
     objectifs: [],
+    canal: 'aucun', telephone: '0556 00 11 22',
   },
 ]
 
@@ -75,7 +85,11 @@ export function genererDemo(): Donnees {
     dateNaissance: f.dateNaissance,
     id: id(),
     nom: 'Démo',
-    telephone: '0550 00 00 00',
+    telephone: f.telephone,
+    canalRappel: f.canal,
+    consentementLe: f.canal === 'aucun' ? null : '2026-02-01',
+    messageNeutreRenforce: f.prenom === 'Leila',
+    representant: f.representant ?? null,
     anamnese: 'Dossier de démonstration — à supprimer avant utilisation réelle.',
     objectifs: f.objectifs.map((texte, i) => ({
       id: id(),
@@ -140,10 +154,12 @@ export function genererDemo(): Donnees {
         aReprendre: redigee ? REPRISES[(j + c) % REPRISES.length] : '',
         noteMajLe: redigee ? date : null,
         motifAnnulation: statut === 'annule_delai' ? 'Empêchement, prévenu la veille' : '',
+        rappelEnvoyeLe: null,
+        rappelModele: null,
         creeLe: new Date().toISOString(),
       })
     }
   }
 
-  return { version: 2, patients, seances, reglages }
+  return { version: 3, patients, seances, reglages, journalRappels: [] }
 }

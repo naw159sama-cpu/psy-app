@@ -1,9 +1,10 @@
 import { useSyncExternalStore } from 'react'
-import type { Donnees, Objectif, Patient, Reglages, Seance } from './types'
+import type { Donnees, JournalRappel, Objectif, Patient, Reglages, Seance } from './types'
+import { MODELES_DEFAUT } from './rappels'
 import { aujourdhui } from './dates'
 
 const CLE = 'psy-app:donnees'
-export const VERSION = 2
+export const VERSION = 3
 
 export const REGLAGES_DEFAUT: Reglages = {
   nomPraticienne: '',
@@ -19,10 +20,20 @@ export const REGLAGES_DEFAUT: Reglages = {
     { debut: '15:00', fin: '16:30' },
   ],
   masquerNoms: false,
+  indicatifPays: '213',
+  adresseCabinet: '',
+  signatureRappel: '',
+  lienVisioParDefaut: '',
+  modelesRappel: MODELES_DEFAUT,
+  heureRappelQuotidien: '18:00',
+  avertissementRappelsVu: false,
 }
 
 function vide(): Donnees {
-  return { version: VERSION, patients: [], seances: [], reglages: { ...REGLAGES_DEFAUT } }
+  return {
+    version: VERSION, patients: [], seances: [], journalRappels: [],
+    reglages: { ...REGLAGES_DEFAUT },
+  }
 }
 
 /**
@@ -30,7 +41,16 @@ function vide(): Donnees {
  * Aucune donnée existante n'est écrasée : on ne fait qu'ajouter ce qui manque.
  */
 export function normaliserPatient(p: Patient): Patient {
-  return { ...p, objectifs: Array.isArray(p.objectifs) ? p.objectifs : [] }
+  return {
+    ...p,
+    objectifs: Array.isArray(p.objectifs) ? p.objectifs : [],
+    // Sans consentement explicite, aucun rappel n'est proposé : « aucun » est
+    // le seul défaut acceptable pour un dossier enregistré avant ce champ.
+    canalRappel: p.canalRappel ?? 'aucun',
+    consentementLe: p.consentementLe ?? null,
+    messageNeutreRenforce: p.messageNeutreRenforce ?? false,
+    representant: p.representant ?? null,
+  }
 }
 
 export function normaliserSeance(s: Seance): Seance {
@@ -39,6 +59,8 @@ export function normaliserSeance(s: Seance): Seance {
     etatObserve: typeof s.etatObserve === 'string' ? s.etatObserve : '',
     note: typeof s.note === 'string' ? s.note : '',
     aReprendre: typeof s.aReprendre === 'string' ? s.aReprendre : '',
+    rappelEnvoyeLe: s.rappelEnvoyeLe ?? null,
+    rappelModele: s.rappelModele ?? null,
   }
 }
 
@@ -47,7 +69,13 @@ function normaliser(d: Partial<Donnees>): Donnees {
     version: VERSION,
     patients: (d.patients ?? []).map(normaliserPatient),
     seances: (d.seances ?? []).map(normaliserSeance),
-    reglages: { ...REGLAGES_DEFAUT, ...(d.reglages ?? {}) },
+    journalRappels: d.journalRappels ?? [],
+    reglages: {
+      ...REGLAGES_DEFAUT,
+      ...(d.reglages ?? {}),
+      // Un fichier plus ancien n'a aucun modèle : lui rendre ceux d'origine.
+      modelesRappel: (d.reglages?.modelesRappel?.length ? d.reglages.modelesRappel : MODELES_DEFAUT),
+    },
   }
 }
 
@@ -172,6 +200,8 @@ export function ajouterSeance(
     aReprendre: '',
     noteMajLe: null,
     motifAnnulation: '',
+    rappelEnvoyeLe: null,
+    rappelModele: null,
     creeLe: new Date().toISOString(),
   }
   publier({ ...etat, seances: [...etat.seances, seance] })
@@ -201,6 +231,63 @@ export function deplacerSeance(idSeance: string, date: string, creneau: number):
 
 export function seancesDuJour(date: string): Seance[] {
   return etat.seances.filter((s) => s.date === date).sort((a, b) => a.creneau - b.creneau)
+}
+
+// --- Rappels ---
+
+/**
+ * Trace la préparation d'un rappel. Le contenu du message n'est jamais stocké :
+ * le journal dit qui, quand et avec quel modèle, rien de plus.
+ */
+export function journaliserRappel(
+  patientId: string,
+  seanceId: string,
+  date: string,
+  modele: string,
+  statut: JournalRappel['statut'],
+) {
+  const ligne: JournalRappel = {
+    id: id(), patientId, seanceId, date, modele, statut,
+    creeLe: new Date().toISOString(),
+  }
+  publier({ ...etat, journalRappels: [...etat.journalRappels, ligne] })
+}
+
+/**
+ * L'application ne peut pas savoir si le message est réellement parti :
+ * ceci enregistre ce que la praticienne déclare, et rien d'autre.
+ */
+export function marquerRappelEnvoye(idSeance: string, modele: string) {
+  const s = etat.seances.find((x) => x.id === idSeance)
+  if (!s) return
+  publier({
+    ...etat,
+    seances: etat.seances.map((x) => (
+      x.id === idSeance
+        ? { ...x, rappelEnvoyeLe: new Date().toISOString(), rappelModele: modele }
+        : x
+    )),
+    journalRappels: [...etat.journalRappels, {
+      id: id(), patientId: s.patientId, seanceId: idSeance, date: s.date,
+      modele, statut: 'envoye' as const, creeLe: new Date().toISOString(),
+    }],
+  })
+}
+
+export function annulerRappelEnvoye(idSeance: string) {
+  const s = etat.seances.find((x) => x.id === idSeance)
+  if (!s) return
+  publier({
+    ...etat,
+    seances: etat.seances.map((x) => (
+      x.id === idSeance ? { ...x, rappelEnvoyeLe: null } : x
+    )),
+    journalRappels: [...etat.journalRappels, {
+      id: id(), patientId: s.patientId, seanceId: idSeance, date: s.date,
+      modele: s.rappelModele ?? '', statut: 'annule' as const,
+      creeLe: new Date().toISOString(),
+    }],
+  })
 }
 
 // --- Réglages ---

@@ -33,7 +33,7 @@ export default function FeuilleRappels({ onFermer, onOuvrirSeance }: Props) {
 
   return (
     <Feuille
-      titre="Rappels"
+      titre="À traiter"
       sous={
         notes.length + impayes.length === 0
           ? 'Rien ne traîne, tout est à jour.'

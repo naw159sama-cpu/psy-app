@@ -75,6 +75,22 @@ Les tests utilisent le lanceur intégré de Node (aucune dépendance). Toute mod
   travail commence le samedi. Les deux règles coexistent : `debutGrille()` pour
   le mois, `debutSemaine()` pour la semaine.
 
+## Règles des rappels
+
+- L'application **n'envoie rien**. Elle prépare un lien `wa.me` et l'utilisatrice
+  appuie. Ne jamais laisser entendre dans l'interface que l'envoi est confirmé.
+- Le lien est calculé **au rendu**, jamais dans le gestionnaire de clic, et posé
+  sur un vrai `<a>`. Aucun `await`, aucun `setTimeout`, aucun `window.open`
+  avant l'ouverture : le contexte d'action utilisateur serait perdu.
+- Aucun modèle ne doit trahir la nature du rendez-vous. Le test
+  `aucun modèle par défaut ne trahit…` garde cette règle.
+- Sans `canalRappel` explicite, aucun rappel n'est proposé. Le défaut est
+  `aucun`, et il le reste.
+- Un dossier de moins de 18 ans écrit au représentant légal, jamais au mineur.
+- Le journal des rappels ne contient **jamais** le texte du message : patient,
+  séance, date, modèle, statut, rien de plus.
+- Toute règle de numéro s'écrit dans `src/lib/telephone.ts`, avec son test.
+
 ## Écueils connus
 
 - `localStorage` peut être vidé par le navigateur. La sauvegarde manuelle est le seul

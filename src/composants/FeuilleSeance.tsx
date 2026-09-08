@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Feuille from './Feuille'
 import BriefSeance from './BriefSeance'
+import BoutonRappel from './BoutonRappel'
 import ClotureSeance from './ClotureSeance'
 import type { ModePaiement, Seance, StatutSeance } from '../lib/types'
 import { useDonnees, majSeance, supprimerSeance, deplacerSeance, patient } from '../lib/store'
@@ -91,6 +92,8 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
           <Chevron />
         </button>
       )}
+
+      {p && seance.statut === 'prevu' && <BoutonRappel seance={seance} patient={p} />}
 
       <section>
         <div className="entete-section"><h3>Comment s’est passée la séance</h3></div>

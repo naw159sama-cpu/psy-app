@@ -27,6 +27,10 @@ export default function FeuilleNouveauPatient({ onFermer, onCree }: Props) {
       statut: 'actif',
       anamnese: '',
       objectifs: [],
+      canalRappel: 'aucun',
+      consentementLe: null,
+      messageNeutreRenforce: false,
+      representant: null,
       tarifPerso: null,
     })
     onCree(p.id)

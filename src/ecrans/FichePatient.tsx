@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useDonnees, majPatient, supprimerPatient } from '../lib/store'
-import { dateCourte, age } from '../lib/dates'
+import { aujourdhui, dateCourte, age } from '../lib/dates'
+import { normaliserNumero } from '../lib/telephone'
 import { da, montantSeul } from '../lib/format'
 import { bilan, partPsy } from '../lib/argent'
 import { LIBELLE_STATUT, couleurStatut } from '../lib/affichage'
@@ -8,7 +9,14 @@ import { useCompteur } from '../composants/Compteur'
 import {
   IconeAttente, IconeCadenas, IconeNote, IconePortefeuille, IconeRecu,
 } from '../composants/Icones'
-import type { StatutPatient } from '../lib/types'
+import type { CanalRappel, StatutPatient } from '../lib/types'
+
+const CANAUX: Array<{ cle: CanalRappel; libelle: string }> = [
+  { cle: 'aucun', libelle: 'Aucun' },
+  { cle: 'whatsapp', libelle: 'WhatsApp' },
+  { cle: 'sms', libelle: 'SMS' },
+  { cle: 'email', libelle: 'E-mail' },
+]
 
 interface Props {
   patientId: string
@@ -44,6 +52,10 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
   }
 
   const anAge = age(p.dateNaissance)
+  const numero = normaliserNumero(p.telephone, reglages.indicatifPays)
+  const numeroRepresentant = normaliserNumero(
+    p.representant?.telephone ?? '', reglages.indicatifPays,
+  )
   const maj = (champs: Partial<typeof p>) => majPatient(patientId, champs)
 
   return (
@@ -112,6 +124,11 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
         <div className="champ">
           <label htmlFor="fp-tel">Téléphone</label>
           <input id="fp-tel" type="tel" value={p.telephone} onChange={(e) => maj({ telephone: e.target.value })} />
+          {p.telephone.trim() && (
+            numero.valide
+              ? <p className="aide apercu-numero">{p.telephone.trim()} → {numero.international}</p>
+              : <p className="aide erreur">{numero.probleme}</p>
+          )}
         </div>
         <div className="champ">
           <label htmlFor="fp-naissance">Date de naissance</label>
@@ -127,6 +144,102 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
             </p>
           )}
         </div>
+      </section>
+
+      <section>
+        <div className="entete-section"><h3>Rappels de rendez-vous</h3></div>
+        <div className="champ">
+          <label>Canal accepté par la personne</label>
+          <div className="choix">
+            {CANAUX.map((c) => (
+              <button
+                key={c.cle}
+                aria-pressed={p.canalRappel === c.cle}
+                onClick={() => maj({
+                  canalRappel: c.cle,
+                  consentementLe: c.cle === 'aucun' ? null : (p.consentementLe ?? aujourdhui()),
+                })}
+              >
+                {c.libelle}
+              </button>
+            ))}
+          </div>
+          <p className="aide">
+            {p.canalRappel === 'aucun'
+              ? 'Aucun rappel ne sera proposé tant que rien n’est recueilli.'
+              : `Consentement recueilli le ${dateCourte(p.consentementLe ?? aujourdhui())}.`}
+          </p>
+        </div>
+
+        {p.canalRappel !== 'aucun' && (
+          <button
+            className="rang rang-cliquable carte"
+            onClick={() => maj({ messageNeutreRenforce: !p.messageNeutreRenforce })}
+          >
+            <span className="rang-lib">
+              <span className="disque"><IconeCadenas taille={15} /></span>
+              <span className="exclusion-textes">
+                <span className="exclusion-nom">Message neutre renforcé</span>
+                <span className="exclusion-motif">Retire la signature et l’adresse du message</span>
+              </span>
+            </span>
+            <span className={`interrupteur${p.messageNeutreRenforce ? ' actif' : ''}`} aria-hidden />
+          </button>
+        )}
+
+        {anAge !== null && anAge < 18 && (
+          <>
+            <div className="note-contexte" style={{ marginTop: 12 }}>
+              <IconeCadenas taille={17} />
+              <span>
+                <strong>Dossier de mineur</strong>
+                Le rappel part au représentant légal, jamais sur le numéro de l’enfant.
+              </span>
+            </div>
+            <div className="duo" style={{ marginTop: 12 }}>
+              <div className="champ">
+                <label htmlFor="fp-rep-nom">Représentant légal</label>
+                <input
+                  id="fp-rep-nom"
+                  value={p.representant?.nom ?? ''}
+                  placeholder="Prénom Nom"
+                  onChange={(e) => maj({
+                    representant: { lien: '', telephone: '', ...(p.representant ?? {}), nom: e.target.value },
+                  })}
+                />
+              </div>
+              <div className="champ">
+                <label htmlFor="fp-rep-lien">Lien</label>
+                <input
+                  id="fp-rep-lien"
+                  value={p.representant?.lien ?? ''}
+                  placeholder="mère, père, tuteur"
+                  onChange={(e) => maj({
+                    representant: { nom: '', telephone: '', ...(p.representant ?? {}), lien: e.target.value },
+                  })}
+                />
+              </div>
+            </div>
+            <div className="champ">
+              <label htmlFor="fp-rep-tel">Téléphone du représentant</label>
+              <input
+                id="fp-rep-tel"
+                type="tel"
+                value={p.representant?.telephone ?? ''}
+                onChange={(e) => maj({
+                  representant: { nom: '', lien: '', ...(p.representant ?? {}), telephone: e.target.value },
+                })}
+              />
+              {(p.representant?.telephone ?? '').trim() && (
+                numeroRepresentant.valide
+                  ? <p className="aide apercu-numero">
+                      {p.representant!.telephone.trim()} → {numeroRepresentant.international}
+                    </p>
+                  : <p className="aide erreur">{numeroRepresentant.probleme}</p>
+              )}
+            </div>
+          </>
+        )}
       </section>
 
       <section>

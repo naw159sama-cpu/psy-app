@@ -71,6 +71,81 @@ fictifs nommés « Démo ». Pour repartir de zéro : *Réglages* → **Effacer 
 
 ---
 
+# Les rappels de rendez-vous
+
+## C'est vous qui envoyez
+
+L'application **ne peut pas** envoyer de messages toute seule. Elle prépare le
+texte et ouvre WhatsApp ; c'est vous qui appuyez sur envoyer. Rien ne part dans
+votre dos, jamais.
+
+Concrètement : la veille au soir, l'accueil affiche « 3 rappels à envoyer ». Vous
+touchez la carte, puis trois fois « Ouvrir WhatsApp ». Une minute.
+
+## Avant la première utilisation
+
+Dans *Réglages* → **Rappels aux patients** :
+
+- **Indicatif du pays** : 213 pour l'Algérie. Un exemple sous le champ montre ce
+  que devient un numéro local — si l'exemple est faux, l'indicatif est faux.
+- **Signature** : votre prénom suffit. Évitez « Dr » et le nom du cabinet.
+- **Adresse** : elle ne sert que pour les premières rencontres.
+- **Heure de préparation** : 18 h par défaut. À partir de cette heure, la carte
+  de l'accueil se met en avant.
+
+## Le consentement, dossier par dossier
+
+Aucun rappel n'est proposé tant que vous n'avez pas indiqué, dans le dossier,
+par quel canal la personne accepte d'être contactée : *Aucun*, *WhatsApp*,
+*SMS* ou *E-mail*. C'est volontaire. La date du recueil est enregistrée.
+
+Deux options par dossier :
+
+- **Message neutre renforcé** : retire la signature et l'adresse. Pour les
+  situations où le téléphone est partagé.
+- **Dossier de mineur** : dès que la date de naissance indique moins de 18 ans,
+  l'application réclame un représentant légal et envoie le rappel **à son
+  numéro**, jamais à celui de l'enfant.
+
+## Les messages ne disent jamais de quoi il s'agit
+
+Aucun modèle fourni ne contient « séance », « consultation », « psychologue » ni
+le nom du cabinet. Un proche qui lit l'écran voit un rendez-vous, rien de plus.
+Si vous modifiez un modèle, gardez cette règle.
+
+Les cinq modèles sont éditables dans les réglages, avec un aperçu en direct
+calculé sur votre prochain rendez-vous réel. Les variables `{prenom}`, `{jour}`,
+`{heure}` et les autres s'insèrent d'un geste.
+
+## Sur l'écran des rappels
+
+Chaque carte montre le message tel qu'il partira. Le crayon permet de le
+modifier avant l'envoi, pour cette fois seulement.
+
+Trois boutons : **Ouvrir WhatsApp**, **Par SMS** en repli, et **Copier** si
+jamais l'ouverture échoue.
+
+Après l'ouverture, l'application vous propose de **marquer comme envoyé**. Elle
+ne peut pas le deviner : elle ne voit pas ce qui se passe dans WhatsApp. Vous
+avez huit secondes pour annuler si vous vous êtes trompée.
+
+Les personnes non rappelées apparaissent en bas, avec le motif : pas de numéro,
+consentement non recueilli, numéro invalide. Elles ne sont jamais cachées.
+
+## Un avertissement qui compte
+
+WhatsApp appartient à Meta. Le contenu des messages est chiffré, mais pas les
+**métadonnées** : qui écrit à qui, et quand. Un rappel régulier envoyé au même
+numéro révèle une relation suivie, même si le message ne dit rien de son objet.
+
+Le SMS n'expose pas cela à un tiers. Pour les situations les plus sensibles,
+préférez-le : il se choisit dossier par dossier.
+
+Et dans tous les cas : **ce canal ne sert jamais à échanger du contenu
+clinique.** Ni compte rendu, ni ressenti, ni question sur l'état de la personne.
+
+---
+
 # Publier l'application sur GitHub Pages
 
 À faire une seule fois. Ensuite, chaque modification envoyée sur GitHub met le

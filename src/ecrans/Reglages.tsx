@@ -3,6 +3,7 @@ import {
   useDonnees, majReglages, exporter, importer, toutEffacer, lire,
 } from '../lib/store'
 import { genererDemo } from '../lib/demo'
+import ReglagesRappels from '../composants/ReglagesRappels'
 import { aujourdhui, JOURS_COURTS } from '../lib/dates'
 import { da, pourcent } from '../lib/format'
 import { IconeCabinet, IconeCadenas, IconePortefeuille, IconeRecu } from '../composants/Icones'
@@ -176,6 +177,8 @@ export default function Reglages() {
         <button className="btn bloc" onClick={ajouterCreneau}>Ajouter un créneau</button>
         <p className="aide">Retirer un créneau ne supprime pas les séances déjà posées dessus.</p>
       </section>
+
+      <ReglagesRappels />
 
       <section>
         <div className="entete-section"><h3>Confort de lecture</h3></div>

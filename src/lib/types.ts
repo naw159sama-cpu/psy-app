@@ -8,6 +8,16 @@ export interface Objectif {
   creeLe: string
 }
 
+/** Par quel canal la personne accepte d'être rappelée. */
+export type CanalRappel = 'aucun' | 'whatsapp' | 'sms' | 'email'
+
+/** Représentant légal, pour les dossiers de mineurs. */
+export interface Representant {
+  nom: string
+  telephone: string
+  lien: string // mère, père, tuteur…
+}
+
 export interface Patient {
   id: string
   prenom: string
@@ -20,6 +30,14 @@ export interface Patient {
   anamnese: string
   /** Objectifs de la prise en charge, affichés dans le brief d'avant-séance. */
   objectifs: Objectif[]
+  /** Canal accepté pour les rappels. « aucun » tant que rien n'a été recueilli. */
+  canalRappel: CanalRappel
+  /** Date de recueil du consentement, au format YYYY-MM-DD. */
+  consentementLe: string | null
+  /** Retire signature et lieu du message : discrétion maximale. */
+  messageNeutreRenforce: boolean
+  /** Pour un mineur, le rappel part ici et jamais sur son propre numéro. */
+  representant: Representant | null
   /** Tarif propre au patient (tarif adapté). Vide = tarif par défaut du cabinet. */
   tarifPerso: number | null
   creeLe: string
@@ -53,12 +71,39 @@ export interface Seance {
   aReprendre: string
   noteMajLe: string | null
   motifAnnulation: string
+  /** Horodatage du « marqué comme envoyé ». L'app ne sait pas si le message est parti. */
+  rappelEnvoyeLe: string | null
+  /** Identifiant du modèle employé pour ce rappel. */
+  rappelModele: string | null
   creeLe: string
 }
 
 export interface Creneau {
   debut: string // HH:MM
   fin: string   // HH:MM
+}
+
+/** Un modèle de message, éditable dans les réglages. */
+export interface Modele {
+  id: string
+  nom: string
+  corps: string
+  actif: boolean
+}
+
+/**
+ * Trace d'une préparation de rappel. Le contenu du message n'y figure jamais :
+ * on note qui, quand, avec quel modèle, et où en est l'envoi.
+ */
+export interface JournalRappel {
+  id: string
+  patientId: string
+  seanceId: string
+  /** Date du rendez-vous concerné. */
+  date: string
+  modele: string
+  statut: 'prepare' | 'envoye' | 'annule'
+  creeLe: string
 }
 
 export interface Reglages {
@@ -70,6 +115,17 @@ export interface Reglages {
   joursTravail: number[]
   creneaux: Creneau[]
   masquerNoms: boolean
+  /** Indicatif téléphonique du pays, sans « + ». 213 pour l'Algérie. */
+  indicatifPays: string
+  adresseCabinet: string
+  signatureRappel: string
+  /** Salle de visioconférence permanente, insérée par {lien_visio}. */
+  lienVisioParDefaut: string
+  modelesRappel: Modele[]
+  /** Heure à partir de laquelle les rappels du lendemain sont mis en avant. */
+  heureRappelQuotidien: string
+  /** L'avertissement sur les métadonnées n'est montré qu'une fois. */
+  avertissementRappelsVu: boolean
 }
 
 export interface Donnees {
@@ -77,4 +133,5 @@ export interface Donnees {
   patients: Patient[]
   seances: Seance[]
   reglages: Reglages
+  journalRappels: JournalRappel[]
 }
