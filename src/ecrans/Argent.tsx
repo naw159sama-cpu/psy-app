@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Stats from './Stats'
 import { useDonnees, majSeance } from '../lib/store'
 import { aujourdhui, ajouterMois, moisCourant, moisLibelle, dateBreve } from '../lib/dates'
 import { da, initiales, montantSeul, pourcent } from '../lib/format'
@@ -7,7 +8,7 @@ import { LIBELLE_STATUT, nomAffiche } from '../lib/affichage'
 import { useCompteur } from '../composants/Compteur'
 import {
   FlecheDroite, FlecheGauche, IconeAbsence, IconeAttente, IconeBas, IconeCabinet,
-  IconeCheck, IconePortefeuille, IconeRecu, IconeVerifie,
+  IconeCheck, IconeCheckSimple, IconePortefeuille, IconeRecu, IconeVerifie,
 } from '../composants/Icones'
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
 
 export default function Argent({ onOuvrirSeance }: Props) {
   const { seances, patients, reglages } = useDonnees()
+  const [vue, setVue] = useState<'honoraires' | 'bilan'>('honoraires')
   const [mois, setMois] = useState(moisCourant())
   const [voirTout, setVoirTout] = useState(false)
   const [encaisseA, setEncaisseA] = useState<string | null>(null)
@@ -39,8 +41,30 @@ export default function Argent({ onOuvrirSeance }: Props) {
     setTimeout(() => setEncaisseA(null), 600)
   }
 
+  const segments = (
+    <div className="segments" role="tablist">
+      <button role="tab" aria-pressed={vue === 'honoraires'} onClick={() => setVue('honoraires')}>
+        Honoraires
+      </button>
+      <button role="tab" aria-pressed={vue === 'bilan'} onClick={() => setVue('bilan')}>
+        Bilan
+      </button>
+    </div>
+  )
+
+  if (vue === 'bilan') {
+    return (
+      <>
+        {segments}
+        <Stats />
+      </>
+    )
+  }
+
   return (
     <>
+      {segments}
+
       <div className="periode">
         <button className="fleche" aria-label="Mois précédent" onClick={() => setMois(ajouterMois(mois, -1))}>
           <FlecheGauche />
@@ -56,32 +80,29 @@ export default function Argent({ onOuvrirSeance }: Props) {
         </button>
       </div>
 
-      <section className="carte-hero">
-        <span className="bulle bulle-1" />
-        <span className="bulle bulle-2" />
-        <div className="hero-interieur">
-          <div className="hero-ligne">
-            <span className="hero-badge">
-              <IconePortefeuille />
-              Honoraires praticienne
-            </span>
-            <span className="hero-note">
-              <IconeVerifie />
-              {mois === moisCourant() ? 'Mois en cours' : 'Mois clos'}
-            </span>
-          </div>
-          <div className="hero-montant">
-            <span className="nombre">{montantSeul(partAnimee)}</span>
-            <span className="unite">DA</span>
-          </div>
-          <p className="hero-legende">Ma part sur {moisLibelle(mois)}</p>
-          <div className="hero-pied">
-            <span className="clef">Déjà encaissé</span>
-            <span className="valeur">{pourcent(partEncaissee)} du facturé</span>
-          </div>
-          <div className="hero-jauge">
-            <span style={{ width: `${partEncaissee}%` }} />
-          </div>
+      <section className="carte-somme">
+        <span className="vague" />
+        <div className="somme-haut">
+          <span className="somme-badge">
+            <IconePortefeuille />
+            Honoraires praticienne
+          </span>
+          <span className="somme-note">
+            <IconeVerifie />
+            {mois === moisCourant() ? 'Mois en cours' : 'Mois clos'}
+          </span>
+        </div>
+        <div className="somme-montant">
+          <span className="nombre">{montantSeul(partAnimee)}</span>
+          <span className="unite">DA</span>
+        </div>
+        <p className="somme-legende">Ma part sur {moisLibelle(mois)}</p>
+        <div className="somme-pied">
+          <span className="clef">Déjà encaissé</span>
+          <span className="valeur">{pourcent(partEncaissee)} du facturé</span>
+        </div>
+        <div className="somme-jauge">
+          <span style={{ width: `${partEncaissee}%` }} />
         </div>
       </section>
 
@@ -95,7 +116,9 @@ export default function Argent({ onOuvrirSeance }: Props) {
             <span className="nombre">{montantSeul(b.total)}</span>
             <span className="unite">DA</span>
           </div>
-          <p className="stat-detail">{b.nbDues} séance{b.nbDues > 1 ? 's' : ''} générée{b.nbDues > 1 ? 's' : ''}</p>
+          <p className="stat-detail">
+            {b.nbDues} séance{b.nbDues > 1 ? 's' : ''} générée{b.nbDues > 1 ? 's' : ''}
+          </p>
         </div>
         <div className="carte-stat">
           <div className="stat-entete">
@@ -127,12 +150,10 @@ export default function Argent({ onOuvrirSeance }: Props) {
             <span className="rang-lib"><span className="pastille-point" /> Encaissé</span>
             <span className="rang-val fort">{da(b.encaisse)}</span>
           </div>
-          <div className={`rang${b.impaye > 0 ? ' corail' : ''}`}>
-            <span className="rang-lib">
-              <IconeAttente taille={16} /> Reste dû
-            </span>
+          <div className={`rang${b.impaye > 0 ? ' terre' : ''}`}>
+            <span className="rang-lib"><IconeAttente taille={16} /> Reste dû</span>
             {b.impaye > 0
-              ? <span className="etiquette corail">{da(b.impaye)}</span>
+              ? <span className="etiquette terre">{da(b.impaye)}</span>
               : <span className="rang-val fort">{da(0)}</span>}
           </div>
           <div className="rang">
@@ -146,7 +167,7 @@ export default function Argent({ onOuvrirSeance }: Props) {
         <div className="entete-section">
           <h3>
             À encaisser
-            {impayes.length > 0 && <span className="compteur">{impayes.length}</span>}
+            {impayes.length > 0 && <span className="pastille-date urgente">{impayes.length}</span>}
           </h3>
           {totalImpayes > 0 && (
             <span className="entete-note">Total : <strong>{da(totalImpayes)}</strong></span>
@@ -155,7 +176,7 @@ export default function Argent({ onOuvrirSeance }: Props) {
 
         {impayes.length === 0 ? (
           <div className="vide">
-            <span className="disque grand"><IconeCheck taille={22} /></span>
+            <span className="disque grand sauge"><IconeCheck taille={22} /></span>
             <strong>Tout est encaissé</strong>
             Rien à relancer pour le moment.
           </div>
@@ -193,16 +214,16 @@ export default function Argent({ onOuvrirSeance }: Props) {
                         )}
                       </span>
                       <span className="ligne-sous">
-                        <span className="accent">{da(s.tarif)}</span>
-                        <span>·</span>
                         <span>{dateBreve(s.date)}</span>
+                        <span>·</span>
+                        <span className="accent">{da(s.tarif)}</span>
                       </span>
                     </span>
                     <button
                       className={`btn principal petit${encaisseA === s.id ? ' valide' : ''}`}
                       onClick={() => encaisser(s.id)}
                     >
-                      <IconeCheck taille={15} />
+                      <IconeCheckSimple taille={13} />
                       Encaisser
                     </button>
                   </div>
@@ -211,11 +232,9 @@ export default function Argent({ onOuvrirSeance }: Props) {
             </div>
 
             {(restants > 0 || voirTout) && (
-              <div style={{ textAlign: 'center', paddingTop: 12 }}>
+              <div style={{ textAlign: 'center', paddingTop: 14 }}>
                 <button className="lien" onClick={() => setVoirTout(!voirTout)}>
-                  {voirTout
-                    ? 'Réduire la liste'
-                    : `Voir les ${restants} autres séances en attente`}
+                  {voirTout ? 'Réduire la liste' : `Voir les ${restants} autres séances en attente`}
                   <IconeBas />
                 </button>
               </div>

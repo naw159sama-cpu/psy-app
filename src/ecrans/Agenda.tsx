@@ -89,7 +89,7 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
           <div className="jour-titre">
             {JOURS[jourDeIso(d)]}
             <small>{dateDeIso(d).getDate()} {MOIS[dateDeIso(d).getMonth()]}</small>
-            {d === today && <span className="aujourdhui">aujourd’hui</span>}
+            {d === today && <span className="pastille-date">aujourd’hui</span>}
           </div>
           <ListeCreneaux date={d} onOuvrirSeance={onOuvrirSeance} onCreneauLibre={onCreneauLibre} />
         </section>

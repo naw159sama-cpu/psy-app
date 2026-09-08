@@ -87,3 +87,9 @@ export function dateBreve(iso: string): string {
   const anneeCourante = new Date().getFullYear()
   return d.getFullYear() === anneeCourante ? jm : `${jm}/${String(d.getFullYear()).slice(2)}`
 }
+
+/** "2026-09-08" -> "8 sept." — le format des pastilles de date. */
+export function dateJourMois(iso: string): string {
+  const d = dateDeIso(iso)
+  return `${d.getDate()} ${MOIS_COURTS[d.getMonth()]}.`
+}

@@ -52,7 +52,7 @@ export default function FeuilleRappels({ onFermer, onOuvrirSeance }: Props) {
       {notes.length > 0 && (
         <section>
           <div className="entete-section">
-            <h3>Notes à écrire <span className="compteur">{notes.length}</span></h3>
+            <h3>Notes à écrire <span className="pastille-date urgente">{notes.length}</span></h3>
           </div>
           <div className="pile">
             {notes.slice(0, 8).map((s) => (
@@ -76,7 +76,7 @@ export default function FeuilleRappels({ onFermer, onOuvrirSeance }: Props) {
       {impayes.length > 0 && (
         <section style={{ marginTop: notes.length > 0 ? 22 : 0 }}>
           <div className="entete-section">
-            <h3>À encaisser <span className="compteur">{impayes.length}</span></h3>
+            <h3>À encaisser <span className="pastille-date urgente">{impayes.length}</span></h3>
             <span className="entete-note">
               Total : <strong>{da(impayes.reduce((t, s) => t + s.tarif, 0))}</strong>
             </span>

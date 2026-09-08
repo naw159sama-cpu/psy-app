@@ -31,12 +31,12 @@ Puis `npm run build` pour la version de production (dossier `dist/`), à dépose
 n'importe quel hébergement de fichiers statiques. Le service worker rend l'application
 utilisable hors connexion une fois installée.
 
-## L'identité visuelle — « Cabinet Serein »
+## L'identité visuelle — « Serene Mind »
 
-Le système de design est décrit dans [docs/design.md](docs/design.md) : fond menthe pâle,
-cartes crème, teals minéraux, et **un seul point corail par écran** (le bouton flottant,
-ou la ligne « reste dû »). Typographie Plus Jakarta Sans. Formes arrondies, ombres
-diffuses teintées, jamais de noir pur ni de blanc pur.
+Le système de design est décrit dans [docs/design.md](docs/design.md) : fond crème chaud,
+cartes blanches, **encre noire comme unique accent fort**, vert sauge pour ce qui est fait
+et terre cuite pour ce qui presse. Typographie Plus Jakarta Sans, formes très arrondies,
+ombres discrètes.
 
 Les animations sont écrites à la main dans `src/styles.css` et respectent
 `prefers-reduced-motion`.

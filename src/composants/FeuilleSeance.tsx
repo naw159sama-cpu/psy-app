@@ -135,7 +135,7 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
           />
           <p className="aide">Enregistrée toute seule pendant que vous écrivez.</p>
         </div>
-        <div className="note-confidentielle">
+        <div className="note-contexte">
           <IconeCadenas taille={17} />
           <span>
             <strong>Note clinique confidentielle</strong>

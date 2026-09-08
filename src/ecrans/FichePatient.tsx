@@ -77,7 +77,7 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
       </section>
 
       {b.impaye > 0 && (
-        <div className="note-confidentielle">
+        <div className="note-contexte">
           <IconeAttente taille={17} />
           <span>
             <strong>{da(b.impaye)} restent à encaisser</strong>
@@ -176,7 +176,7 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
 
       <section>
         <div className="entete-section">
-          <h3>Historique <span className="compteur calme">{siennes.length}</span></h3>
+          <h3>Historique <span className="pastille-date">{siennes.length}</span></h3>
         </div>
         {siennes.length === 0 ? (
           <div className="vide">
@@ -200,7 +200,7 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
                     <span>{s.note.trim() ? 'note écrite' : 'pas de note'}</span>
                   </span>
                 </span>
-                <span className="creneau-fin">
+                <span className="seance-fin">
                   <span className={`puce ${couleurStatut(s.statut)}`}>{LIBELLE_STATUT[s.statut]}</span>
                   {!s.paye && s.statut !== 'annule_delai' && s.statut !== 'prevu' && (
                     <span className="puce attente">Impayée</span>
@@ -215,7 +215,7 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
       <section>
         {confirmeSuppr ? (
           <>
-            <div className="note-confidentielle" style={{ marginBottom: 12 }}>
+            <div className="note-contexte" style={{ marginBottom: 12 }}>
               <IconeCadenas taille={17} />
               <span>
                 <strong>Suppression définitive</strong>

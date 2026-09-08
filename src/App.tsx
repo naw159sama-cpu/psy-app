@@ -4,15 +4,15 @@ import Agenda from './ecrans/Agenda'
 import Patients from './ecrans/Patients'
 import FichePatient from './ecrans/FichePatient'
 import Argent from './ecrans/Argent'
-import Stats from './ecrans/Stats'
 import Reglages from './ecrans/Reglages'
 import FeuilleSeance from './composants/FeuilleSeance'
 import FeuilleChoixPatient from './composants/FeuilleChoixPatient'
 import FeuilleNouveauPatient from './composants/FeuilleNouveauPatient'
 import FeuilleRappels from './composants/FeuilleRappels'
+import FeuilleSouffle from './composants/FeuilleSouffle'
 import {
   IconeAgenda, IconeArgent, IconeCloche, IconeJour, IconeOeil, IconePatients,
-  IconePlus, IconeReglages, IconeRetour, IconeStats,
+  IconePlus, IconeReglages, IconeRetour,
 } from './composants/Icones'
 import { useDonnees, basculerMasquage } from './lib/store'
 import { aujourdhui, ajouterJours, dateLongue, jourDeIso } from './lib/dates'
@@ -20,35 +20,31 @@ import { estDue } from './lib/argent'
 import { initiales } from './lib/format'
 import { nomAffiche } from './lib/affichage'
 
-type Onglet = 'jour' | 'agenda' | 'patients' | 'argent' | 'stats'
-type Vue =
-  | { type: 'onglet' }
-  | { type: 'patient'; id: string }
-  | { type: 'reglages' }
+type Onglet = 'accueil' | 'agenda' | 'patients' | 'finances' | 'reglages'
+type Vue = { type: 'onglet' } | { type: 'patient'; id: string }
 type Panneau =
   | { type: 'seance'; id: string }
   | { type: 'choix'; date: string; creneau: number }
   | { type: 'nouveau-patient' }
   | { type: 'rappels' }
+  | { type: 'souffle' }
   | null
 
 const ONGLETS: Array<{ cle: Onglet; libelle: string; Icone: typeof IconeJour }> = [
-  { cle: 'jour', libelle: 'Ma journée', Icone: IconeJour },
+  { cle: 'accueil', libelle: 'Accueil', Icone: IconeJour },
   { cle: 'agenda', libelle: 'Agenda', Icone: IconeAgenda },
   { cle: 'patients', libelle: 'Patients', Icone: IconePatients },
-  { cle: 'argent', libelle: 'Argent', Icone: IconeArgent },
-  { cle: 'stats', libelle: 'Bilan', Icone: IconeStats },
+  { cle: 'finances', libelle: 'Finances', Icone: IconeArgent },
+  { cle: 'reglages', libelle: 'Réglages', Icone: IconeReglages },
 ]
 
-const TITRES: Record<Onglet, { surtitre: string; titre: string }> = {
-  jour: { surtitre: 'Consultations du jour', titre: 'Ma journée' },
+const TITRES: Record<Exclude<Onglet, 'accueil'>, { surtitre: string; titre: string }> = {
   agenda: { surtitre: 'Planning de la semaine', titre: 'Agenda' },
   patients: { surtitre: 'Dossiers cliniques', titre: 'Patients' },
-  argent: { surtitre: 'Facturation & honoraires', titre: 'Argent' },
-  stats: { surtitre: 'Activité du cabinet', titre: 'Bilan' },
+  finances: { surtitre: 'Honoraires & activité', titre: 'Finances' },
+  reglages: { surtitre: 'Configuration du cabinet', titre: 'Réglages' },
 }
 
-/** Prochain jour travaillé, aujourd'hui compris — sert au bouton « nouveau rendez-vous ». */
 function prochainJourTravaille(jours: number[]): string {
   let d = aujourdhui()
   for (let i = 0; i < 14; i++) {
@@ -58,9 +54,14 @@ function prochainJourTravaille(jours: number[]): string {
   return aujourdhui()
 }
 
+/** "mardi 8 septembre" -> "Mardi 8 septembre". */
+function capitale(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
 export default function App() {
   const { patients, seances, reglages } = useDonnees()
-  const [onglet, setOnglet] = useState<Onglet>('jour')
+  const [onglet, setOnglet] = useState<Onglet>('accueil')
   const [vue, setVue] = useState<Vue>({ type: 'onglet' })
   const [panneau, setPanneau] = useState<Panneau>(null)
 
@@ -83,7 +84,7 @@ export default function App() {
 
   const today = aujourdhui()
   const nbRappels = useMemo(() => {
-    const notes = seances.filter((s) => s.date < today && s.statut === 'effectue' && !s.note.trim())
+    const notes = seances.filter((s) => s.date <= today && s.statut === 'effectue' && !s.note.trim())
     const impayes = seances.filter((s) => s.date <= today && estDue(s.statut) && !s.paye)
     return notes.length + impayes.length
   }, [seances, today])
@@ -98,40 +99,15 @@ export default function App() {
     const date = prochainJourTravaille(reglages.joursTravail)
     const pris = new Set(seances.filter((s) => s.date === date).map((s) => s.creneau))
     const libre = reglages.creneaux.findIndex((_, i) => !pris.has(i))
-    if (libre === -1) {
-      setOnglet('agenda')
-      setVue({ type: 'onglet' })
-      return
-    }
+    if (libre === -1) { allerOnglet('agenda'); return }
     creneauLibre(date, libre)
   }
 
-  // Titre de page, bouton retour, et l'unique action corail de l'écran.
-  let surtitre = ''
-  let titre = ''
-  let legende: string | null = null
-  let retour: (() => void) | null = null
   let fab: { libelle: string; action: () => void } | null = null
-
-  if (vue.type === 'patient') {
-    const p = patients.find((x) => x.id === vue.id)
-    surtitre = 'Dossier clinique'
-    titre = nomAffiche(p, reglages.masquerNoms)
-    legende = p?.motif || 'Suivi en cours'
-    retour = () => setVue({ type: 'onglet' })
-  } else if (vue.type === 'reglages') {
-    surtitre = 'Configuration'
-    titre = 'Réglages'
-    retour = () => setVue({ type: 'onglet' })
-  } else {
-    surtitre = TITRES[onglet].surtitre
-    titre = TITRES[onglet].titre
-    if (onglet === 'jour') {
-      legende = dateLongue(today)
+  if (vue.type === 'onglet') {
+    if (onglet === 'accueil' || onglet === 'agenda') {
       fab = { libelle: 'Nouveau rendez-vous', action: nouveauRendezVous }
-    }
-    if (onglet === 'agenda') fab = { libelle: 'Nouveau rendez-vous', action: nouveauRendezVous }
-    if (onglet === 'patients') {
+    } else if (onglet === 'patients') {
       fab = { libelle: 'Nouveau patient', action: () => setPanneau({ type: 'nouveau-patient' }) }
     }
   }
@@ -142,6 +118,21 @@ export default function App() {
     ? initiales(nomPraticienne.split(' ')[0] ?? '', nomPraticienne.split(' ').slice(1).join(' '))
     : 'MC'
 
+  // En-tête de page : la carte d'accueil fait ce travail sur l'écran Accueil.
+  const patientOuvert = vue.type === 'patient'
+    ? patients.find((x) => x.id === vue.id)
+    : undefined
+  const enTete = vue.type === 'patient'
+    ? {
+        surtitre: 'Dossier clinique',
+        titre: nomAffiche(patientOuvert, reglages.masquerNoms),
+        legende: patientOuvert?.motif || 'Suivi en cours',
+        retour: () => setVue({ type: 'onglet' }),
+      }
+    : onglet === 'accueil'
+      ? null
+      : { ...TITRES[onglet], legende: null as string | null, retour: null }
+
   return (
     <div className="app">
       <header className="barre-haut">
@@ -150,7 +141,8 @@ export default function App() {
           <div className="identite-textes">
             <h1 className="identite-titre">{nomCabinet}</h1>
             <p className="identite-sous">
-              {nomPraticienne ? `${nomPraticienne} · Psychologue` : 'Psychologue clinicienne'}
+              {capitale(dateLongue(today))}
+              {nomPraticienne ? ` · ${nomPraticienne}` : ''}
             </p>
           </div>
         </div>
@@ -159,7 +151,7 @@ export default function App() {
             className={`bouton-rond${reglages.masquerNoms ? ' actif' : ''}`}
             aria-label={reglages.masquerNoms ? 'Afficher les noms' : 'Masquer les noms'}
             aria-pressed={reglages.masquerNoms}
-            title="Masquer les noms (Ctrl+M)"
+            title="Mode discrétion (Ctrl+M)"
             onClick={basculerMasquage}
           >
             <IconeOeil barre={reglages.masquerNoms} />
@@ -169,38 +161,31 @@ export default function App() {
             aria-label={`Rappels${nbRappels > 0 ? ` (${nbRappels})` : ''}`}
             onClick={() => setPanneau({ type: 'rappels' })}
           >
-            <IconeCloche />
+            <IconeCloche taille={21} />
             {nbRappels > 0 && <span className="point-alerte" />}
           </button>
-          {vue.type !== 'reglages' && (
-            <button
-              className="bouton-rond"
-              aria-label="Réglages"
-              onClick={() => setVue({ type: 'reglages' })}
-            >
-              <IconeReglages />
-            </button>
-          )}
         </div>
       </header>
 
-      <main className="contenu" key={vue.type === 'onglet' ? onglet : vue.type}>
-        <div className="titre-page">
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
-            {retour && (
-              <button className="rond-contour" aria-label="Retour" onClick={retour}>
-                <IconeRetour />
-              </button>
-            )}
-            <div style={{ minWidth: 0 }}>
-              <span className="surtitre">{surtitre}</span>
-              <h2 style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {titre}
-              </h2>
-              {legende && <p className="legende">{legende}</p>}
+      <main className="contenu" key={vue.type === 'onglet' ? onglet : `patient-${vue.id}`}>
+        {enTete && (
+          <div className="titre-page">
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
+              {enTete.retour && (
+                <button className="rond-contour" aria-label="Retour" onClick={enTete.retour}>
+                  <IconeRetour />
+                </button>
+              )}
+              <div style={{ minWidth: 0 }}>
+                <span className="surtitre">{enTete.surtitre}</span>
+                <h2 style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {enTete.titre}
+                </h2>
+                {enTete.legende && <p className="legende">{enTete.legende}</p>}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {vue.type === 'patient' ? (
           <FichePatient
@@ -208,10 +193,13 @@ export default function App() {
             onOuvrirSeance={ouvrirSeance}
             onSupprime={() => setVue({ type: 'onglet' })}
           />
-        ) : vue.type === 'reglages' ? (
-          <Reglages />
-        ) : onglet === 'jour' ? (
-          <Jour onOuvrirSeance={ouvrirSeance} onCreneauLibre={creneauLibre} />
+        ) : onglet === 'accueil' ? (
+          <Jour
+            onOuvrirSeance={ouvrirSeance}
+            onCreneauLibre={creneauLibre}
+            onVoirAgenda={() => allerOnglet('agenda')}
+            onSouffle={() => setPanneau({ type: 'souffle' })}
+          />
         ) : onglet === 'agenda' ? (
           <Agenda onOuvrirSeance={ouvrirSeance} onCreneauLibre={creneauLibre} />
         ) : onglet === 'patients' ? (
@@ -219,15 +207,15 @@ export default function App() {
             onOuvrirPatient={(id) => setVue({ type: 'patient', id })}
             onNouveauPatient={() => setPanneau({ type: 'nouveau-patient' })}
           />
-        ) : onglet === 'argent' ? (
+        ) : onglet === 'finances' ? (
           <Argent onOuvrirSeance={ouvrirSeance} />
         ) : (
-          <Stats />
+          <Reglages />
         )}
       </main>
 
       {fab && (
-        <button className="fab" key={titre} onClick={fab.action}>
+        <button className="fab" key={fab.libelle} onClick={fab.action}>
           <IconePlus />
           {fab.libelle}
         </button>
@@ -242,7 +230,7 @@ export default function App() {
               aria-current={vue.type === 'onglet' && onglet === cle ? 'page' : undefined}
               onClick={() => allerOnglet(cle)}
             >
-              <Icone />
+              <Icone taille={20} />
               {libelle}
             </button>
           ))}
@@ -271,12 +259,11 @@ export default function App() {
         />
       )}
       {panneau?.type === 'rappels' && (
-        <FeuilleRappels
-          onFermer={() => setPanneau(null)}
-          onOuvrirSeance={ouvrirSeance}
-        />
+        <FeuilleRappels onFermer={() => setPanneau(null)} onOuvrirSeance={ouvrirSeance} />
+      )}
+      {panneau?.type === 'souffle' && (
+        <FeuilleSouffle onFermer={() => setPanneau(null)} />
       )}
     </div>
   )
 }
-

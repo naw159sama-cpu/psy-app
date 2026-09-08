@@ -190,7 +190,7 @@ export default function Reglages() {
 
       <section>
         <div className="entete-section"><h3>Sauvegarde</h3></div>
-        <div className="note-confidentielle" style={{ marginBottom: 14 }}>
+        <div className="note-contexte" style={{ marginBottom: 14 }}>
           <IconeCadenas taille={17} />
           <span>
             <strong>À faire une fois par semaine.</strong>
@@ -236,7 +236,7 @@ export default function Reglages() {
         <div className="entete-section"><h3>Tout effacer</h3></div>
         {confirmeEffacer ? (
           <>
-            <div className="note-confidentielle" style={{ marginBottom: 12 }}>
+            <div className="note-contexte" style={{ marginBottom: 12 }}>
               <IconeCadenas taille={17} />
               <span>
                 <strong>Cette action est définitive.</strong>

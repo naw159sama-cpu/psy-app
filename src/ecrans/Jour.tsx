@@ -1,18 +1,21 @@
 import { useMemo } from 'react'
 import ListeCreneaux from '../composants/ListeCreneaux'
-import { useCompteur } from '../composants/Compteur'
-import { useDonnees } from '../lib/store'
-import { aujourdhui, ajouterJours, dateLongue, jourDeIso, JOURS } from '../lib/dates'
-import { da, initiales, montantSeul } from '../lib/format'
-import { estDue, partPsy } from '../lib/argent'
+import { useDonnees, majSeance } from '../lib/store'
+import {
+  aujourdhui, ajouterJours, dateBreve, dateJourMois, dateLongue, jourDeIso, JOURS,
+} from '../lib/dates'
+import { estDue } from '../lib/argent'
 import { nomAffiche } from '../lib/affichage'
 import {
-  IconeAttente, IconeCadenas, IconeNote, IconePortefeuille, IconeAgenda,
+  Chevron, IconeAgenda, IconeCadenas, IconeCheckSimple, IconeFeuille, IconeLecture,
+  IconeSouffle,
 } from '../composants/Icones'
 
 interface Props {
   onOuvrirSeance: (seanceId: string) => void
   onCreneauLibre: (date: string, creneau: number) => void
+  onVoirAgenda: () => void
+  onSouffle: () => void
 }
 
 function prochainJourTravaille(jours: number[]): string {
@@ -24,7 +27,20 @@ function prochainJourTravaille(jours: number[]): string {
   return aujourdhui()
 }
 
-export default function Jour({ onOuvrirSeance, onCreneauLibre }: Props) {
+/** Une phrase qui décrit la journée, sans jargon. */
+function resume(nbSeances: number, nbNotes: number, estAujourdhui: boolean): string {
+  const quand = estAujourdhui ? 'Une journée' : 'Votre prochaine journée'
+  if (nbSeances === 0) {
+    return `${quand} sans consultation : du temps pour les comptes rendus et pour souffler.`
+  }
+  const rythme = nbSeances >= 4 ? 'bien remplie' : nbSeances >= 2 ? 'équilibrée' : 'légère'
+  const debut = `${quand} ${rythme} : ${nbSeances} consultation${nbSeances > 1 ? 's' : ''} prévue${nbSeances > 1 ? 's' : ''}`
+  return nbNotes > 0
+    ? `${debut}, et ${nbNotes} compte${nbNotes > 1 ? 's' : ''} rendu${nbNotes > 1 ? 's' : ''} qui attend${nbNotes > 1 ? 'ent' : ''}.`
+    : `${debut}, et des temps de respiration entre chacune.`
+}
+
+export default function Jour({ onOuvrirSeance, onCreneauLibre, onVoirAgenda, onSouffle }: Props) {
   const { seances, patients, reglages } = useDonnees()
   const today = aujourdhui()
   const date = useMemo(
@@ -34,31 +50,96 @@ export default function Jour({ onOuvrirSeance, onCreneauLibre }: Props) {
   const estAujourdhui = date === today
 
   const duJour = seances.filter((s) => s.date === date)
-  // Ce que la journée rapporte si tout se déroule comme prévu : les séances encore
-  // « prévues » comptent, sinon le matin l'écran affiche toujours zéro.
-  const partDuJour = duJour.reduce(
-    (t, s) => t + (s.statut === 'prevu' ? Math.round((s.tarif * s.partPsyPct) / 100) : partPsy(s)),
-    0,
-  )
-  const partAnimee = useCompteur(partDuJour)
-  const toutJoue = duJour.length > 0 && duJour.every((s) => s.statut !== 'prevu')
-  const impayesDuJour = duJour.filter((s) => estDue(s.statut) && !s.paye)
-
   const notesEnRetard = seances
-    .filter((s) => s.date < today && s.statut === 'effectue' && !s.note.trim())
+    .filter((s) => s.date <= today && s.statut === 'effectue' && !s.note.trim())
     .sort((a, b) => (a.date < b.date ? 1 : -1))
-  const impayesAnciens = seances.filter((s) => s.date < date && estDue(s.statut) && !s.paye)
+  const impayes = seances
+    .filter((s) => s.date <= today && estDue(s.statut) && !s.paye)
+    .sort((a, b) => (a.date < b.date ? -1 : 1))
 
-  const nom = (id: string) => nomAffiche(patients.find((p) => p.id === id), false)
-  const mono = (id: string) => {
-    const p = patients.find((x) => x.id === id)
-    return p ? initiales(p.prenom, p.nom) : '?'
+  const prenom = (reglages.nomPraticienne.trim().split(' ')[0] || '').trim()
+  const salutation = new Date().getHours() >= 18 ? 'Bonsoir' : 'Bonjour'
+
+  // Les tâches du jour : d'abord les comptes rendus, puis les encaissements.
+  const taches = [
+    ...notesEnRetard.slice(0, 3).map((s) => ({
+      id: s.id,
+      texte: `Rédiger le compte-rendu de ${nomAffiche(patients.find((p) => p.id === s.patientId), false)}`,
+      etiquette: s.date === today ? "Aujourd'hui" : dateBreve(s.date),
+      urgente: s.date === today,
+      masquable: true,
+      action: 'ouvrir' as const,
+    })),
+    ...impayes.slice(0, 3).map((s) => ({
+      id: s.id,
+      texte: `Encaisser la séance de ${nomAffiche(patients.find((p) => p.id === s.patientId), false)}`,
+      etiquette: s.date === today ? "Aujourd'hui" : dateBreve(s.date),
+      urgente: s.date < today,
+      masquable: true,
+      action: 'encaisser' as const,
+    })),
+  ]
+  const nbUrgentes = taches.filter((t) => t.urgente).length
+
+  const traiter = (t: (typeof taches)[number]) => {
+    if (t.action === 'encaisser') {
+      majSeance(t.id, { paye: true, modePaiement: 'especes', datePaiement: today })
+    } else {
+      onOuvrirSeance(t.id)
+    }
   }
 
   return (
     <>
+      <section className="carte-accueil">
+        <div className="accueil-haut">
+          <div style={{ minWidth: 0 }}>
+            <span className="accueil-surtitre">Synthèse clinique du jour</span>
+            <h2 className="accueil-titre">
+              {prenom ? (
+                <>
+                  {salutation},{' '}
+                  <span className={`leger${reglages.masquerNoms ? ' flou' : ''}`}>{prenom}.</span>
+                </>
+              ) : (
+                <>{salutation}.</>
+              )}
+            </h2>
+            <p className="accueil-texte">
+              {resume(duJour.length, notesEnRetard.length, estAujourdhui)}
+            </p>
+          </div>
+          <span className="disque-accueil"><IconeFeuille taille={19} /></span>
+        </div>
+
+        <div className="bulles no-scroll">
+          <span className="bulle verte">
+            <span className="point" />
+            {duJour.length} séance{duJour.length > 1 ? 's' : ''}
+          </span>
+          {notesEnRetard.length > 0 && (
+            <span className="bulle rouge">
+              <span className="point" />
+              {notesEnRetard.length} note{notesEnRetard.length > 1 ? 's' : ''} à rédiger
+            </span>
+          )}
+          {impayes.length > 0 && (
+            <span className="bulle bleue">
+              <span className="point" />
+              {impayes.length} séance{impayes.length > 1 ? 's' : ''} à encaisser
+            </span>
+          )}
+          {notesEnRetard.length === 0 && impayes.length === 0 && (
+            <span className="bulle">
+              <span className="point" style={{ background: 'var(--texte-doux)' }} />
+              Rien en retard
+            </span>
+          )}
+        </div>
+      </section>
+
       {!estAujourdhui && (
-        <div className="note-confidentielle">
+        <div className="note-contexte">
           <IconeAgenda taille={18} />
           <span>
             <strong>Vous ne travaillez pas aujourd’hui.</strong>
@@ -67,103 +148,76 @@ export default function Jour({ onOuvrirSeance, onCreneauLibre }: Props) {
         </div>
       )}
 
-      <ListeCreneaux date={date} onOuvrirSeance={onOuvrirSeance} onCreneauLibre={onCreneauLibre} />
-
-      <section className="duo-cartes">
-        <div className="carte-stat">
-          <div className="stat-entete">
-            <span className="disque"><IconeAgenda taille={16} /></span>
-            <span className="stat-libelle">Créneaux pris</span>
-          </div>
-          <div className="stat-valeur">
-            <span className="nombre">{duJour.length}</span>
-            <span className="unite">/ {reglages.creneaux.length}</span>
-          </div>
-          <p className="stat-detail">
-            {reglages.creneaux.length - duJour.length === 0
-              ? 'Journée complète'
-              : `${reglages.creneaux.length - duJour.length} encore libre${
-                  reglages.creneaux.length - duJour.length > 1 ? 's' : ''}`}
-          </p>
+      <section>
+        <div className="entete-section">
+          <h3>
+            {estAujourdhui ? "Aujourd'hui" : 'Prochaine journée'}
+            <span className="pastille-date">{dateJourMois(date)}</span>
+          </h3>
+          <button className="lien-section" onClick={onVoirAgenda}>
+            Vue agenda
+            <Chevron taille={15} />
+          </button>
         </div>
-        <div className="carte-stat">
-          <div className="stat-entete">
-            <span className="disque"><IconePortefeuille /></span>
-            <span className="stat-libelle">Ma part</span>
-          </div>
-          <div className="stat-valeur">
-            <span className="nombre">{montantSeul(partAnimee)}</span>
-            <span className="unite">DA</span>
-          </div>
-          <p className="stat-detail">
-            {impayesDuJour.length > 0
-              ? `${da(impayesDuJour.reduce((t, s) => t + s.tarif, 0))} à encaisser`
-              : toutJoue ? 'Journée soldée' : 'Si tout se fait'}
-          </p>
-        </div>
+        <ListeCreneaux date={date} onOuvrirSeance={onOuvrirSeance} onCreneauLibre={onCreneauLibre} />
       </section>
 
-      {notesEnRetard.length > 0 && (
+      {taches.length > 0 && (
         <section>
           <div className="entete-section">
-            <h3>Notes à écrire <span className="compteur">{notesEnRetard.length}</span></h3>
-          </div>
-          <div className="pile">
-            {notesEnRetard.slice(0, 4).map((s) => (
-              <button key={s.id} className="carte-ligne" onClick={() => onOuvrirSeance(s.id)}>
-                <span className="disque grand"><IconeNote taille={19} /></span>
-                <span className="ligne-corps">
-                  <span className="ligne-titre">
-                    <span className={`nom${reglages.masquerNoms ? ' flou' : ''}`}>
-                      {nom(s.patientId)}
-                    </span>
-                  </span>
-                  <span className="ligne-sous">{dateLongue(s.date)}</span>
-                </span>
-                <span className="puce attente">À noter</span>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {impayesAnciens.length > 0 && (
-        <section>
-          <div className="entete-section">
-            <h3>Impayés plus anciens <span className="compteur">{impayesAnciens.length}</span></h3>
+            <h3>Tâches cliniques</h3>
             <span className="entete-note">
-              Total : <strong>{da(impayesAnciens.reduce((t, s) => t + s.tarif, 0))}</strong>
+              {nbUrgentes > 0 ? `${nbUrgentes} urgente${nbUrgentes > 1 ? 's' : ''}` : 'rien d’urgent'}
             </span>
           </div>
-          <div className="pile">
-            {impayesAnciens.slice(0, 4).map((s) => (
-              <button key={s.id} className="carte-ligne" onClick={() => onOuvrirSeance(s.id)}>
-                <span className="monogramme">{mono(s.patientId)}</span>
-                <span className="ligne-corps">
-                  <span className="ligne-titre">
-                    <span className={`nom${reglages.masquerNoms ? ' flou' : ''}`}>
-                      {nom(s.patientId)}
-                    </span>
-                  </span>
-                  <span className="ligne-sous">
-                    <span className="accent">{da(s.tarif)}</span>
-                    <span>·</span>
-                    <span>{dateLongue(s.date)}</span>
+          <div className="pile-taches">
+            {taches.map((t) => (
+              <div key={`${t.action}-${t.id}`} className="carte-tache">
+                <span className="tache-gauche">
+                  <button
+                    className="case"
+                    aria-label={t.action === 'encaisser' ? 'Marquer comme encaissée' : 'Ouvrir la séance'}
+                    onClick={(e) => { e.stopPropagation(); traiter(t) }}
+                  >
+                    <IconeCheckSimple taille={13} />
+                  </button>
+                  <span
+                    className={`tache-texte${reglages.masquerNoms && t.masquable ? ' flou' : ''}`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onOuvrirSeance(t.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') onOuvrirSeance(t.id) }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {t.texte}
                   </span>
                 </span>
-                <span className="disque"><IconeAttente taille={16} /></span>
-              </button>
+                <span className={`etiquette${t.urgente ? ' terre' : ''}`}>{t.etiquette}</span>
+              </div>
             ))}
           </div>
         </section>
       )}
 
+      <section className="carte-souffle">
+        <div className="souffle-gauche">
+          <span className="disque-souffle"><IconeSouffle taille={19} /></span>
+          <div style={{ minWidth: 0 }}>
+            <h4>Sas de décompression</h4>
+            <p>Respiration guidée · 3 min</p>
+          </div>
+        </div>
+        <button className="btn-lecture" aria-label="Lancer la respiration guidée" onClick={onSouffle}>
+          <IconeLecture taille={17} />
+        </button>
+      </section>
+
       {reglages.masquerNoms && (
-        <div className="note-confidentielle">
+        <div className="note-contexte terre">
           <IconeCadenas taille={17} />
           <span>
-            <strong>Écran de confidentialité actif</strong>
-            Les noms des patients sont masqués. Touchez l’œil en haut pour les réafficher.
+            <strong>Mode discrétion actif</strong>
+            Les noms des patients sont floutés. Touchez l’œil en haut pour les réafficher.
           </span>
         </div>
       )}

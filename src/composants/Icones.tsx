@@ -1,6 +1,6 @@
 interface Props { taille?: number }
 
-/** Trait fin, extrémités arrondies : la ligne graphique du système « Cabinet Serein ». */
+/** Trait fin, extrémités arrondies : la ligne graphique du système « Serene Mind ». */
 const base = (taille: number) => ({
   width: taille,
   height: taille,
@@ -225,4 +225,69 @@ export function IconeRecherche({ taille = 18 }: Props) {
       <path d="m15.6 15.6 4 4" />
     </svg>
   )
+}
+
+/* ---------- Serene Mind ---------- */
+
+export function IconeFeuille({ taille = 20 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <path d="M12 20.4c0-5 2.4-8.6 7.4-9.4-.4 5.2-3 8.6-7.4 9.4Z" />
+      <path d="M12 20.4c0-5-2.4-8.6-7.4-9.4.4 5.2 3 8.6 7.4 9.4Z" />
+      <path d="M12 20.4v-6.2" />
+      <path d="M12 10.6a4 4 0 0 1 0-7.2 4 4 0 0 1 0 7.2Z" />
+    </svg>
+  )
+}
+
+export function IconeNoteEdit({ taille = 18 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <path d="M4.4 7.4h11M4.4 12h7.4M4.4 16.6h5" />
+      <path d="m19.6 11.4-5.6 5.6-2.6.6.6-2.6 5.6-5.6a1.4 1.4 0 0 1 2 2Z" />
+    </svg>
+  )
+}
+
+export function IconePoints({ taille = 18 }: Props) {
+  return (
+    <svg {...base(taille)} strokeWidth={2}>
+      <path d="M12 5.6v.01M12 12v.01M12 18.4v.01" />
+    </svg>
+  )
+}
+
+export function IconeChrono({ taille = 16 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <circle cx="12" cy="13.4" r="7.6" />
+      <path d="M12 9.8v3.6l2.4 1.5M9.4 2.8h5.2" />
+    </svg>
+  )
+}
+
+export function IconeLecture({ taille = 18 }: Props) {
+  return (
+    <svg {...base(taille)} fill="currentColor" stroke="none">
+      <path d="M8.4 5.6a.9.9 0 0 1 1.36-.78l9 6.4a.9.9 0 0 1 0 1.56l-9 6.4A.9.9 0 0 1 8.4 18.4Z" />
+    </svg>
+  )
+}
+
+export function IconeSouffle({ taille = 20 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <circle cx="12" cy="4.8" r="1.9" />
+      <path d="M12 8.2v4.4M8.2 20.2 12 12.6l3.8 7.6" />
+      <path d="M5.4 10.2 12 12.6l6.6-2.4" />
+    </svg>
+  )
+}
+
+export function IconeCheckSimple({ taille = 14 }: Props) {
+  return <svg {...base(taille)} strokeWidth={2.4}><path d="m5.4 12.4 4.2 4.2 9-9.2" /></svg>
+}
+
+export function IconeCroix({ taille = 16 }: Props) {
+  return <svg {...base(taille)}><path d="M6.4 6.4 17.6 17.6M17.6 6.4 6.4 17.6" /></svg>
 }

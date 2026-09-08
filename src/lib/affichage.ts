@@ -26,8 +26,8 @@ export const AIDE_STATUT: Record<StatutSeance, string> = {
 
 export function couleurStatut(s: StatutSeance): string {
   switch (s) {
-    case 'prevu': return 'neutre'
-    case 'effectue': return 'ok'
+    case 'prevu': return 'avenir'
+    case 'effectue': return 'faite'
     case 'annule_delai': return 'gris'
     case 'annule_hors_delai': return 'attente'
     case 'absent': return 'alerte'
