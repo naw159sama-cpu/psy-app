@@ -4,7 +4,7 @@ name: Publier sur GitHub Pages
 # et mise en ligne automatiquement.
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
