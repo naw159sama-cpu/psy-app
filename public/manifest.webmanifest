@@ -1,0 +1,17 @@
+{
+  "name": "Mon cabinet",
+  "short_name": "Mon cabinet",
+  "description": "Agenda, dossiers patients et suivi des honoraires.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f7f6",
+  "theme_color": "#2f6d63",
+  "icons": [
+    { "src": "/icone.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icone-masque.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
