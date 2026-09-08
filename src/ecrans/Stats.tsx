@@ -1,10 +1,14 @@
 import { useMemo } from 'react'
 import { useDonnees } from '../lib/store'
 import {
-  aujourdhui, ajouterMois, dateDeIso, jourDeIso, moisCourant, moisLibelle, MOIS_COURTS,
+  aujourdhui, ajouterMois, jourDeIso, moisCourant, moisLibelle, MOIS_COURTS, JOURS,
 } from '../lib/dates'
-import { da } from '../lib/format'
+import { da, montantSeul, pourcent } from '../lib/format'
 import { bilan, estDue, partPsy } from '../lib/argent'
+import { useCompteur } from '../composants/Compteur'
+import {
+  IconeAbsence, IconeAgenda, IconePatients, IconePortefeuille, IconeStats,
+} from '../composants/Icones'
 import type { Seance } from '../lib/types'
 
 /**
@@ -46,7 +50,6 @@ export default function Stats() {
       )
     : 0
 
-  // File active : patients vus au moins une fois dans les 3 derniers mois.
   const limite = ajouterMois(mois, -2) + '-01'
   const fileActive = new Set(
     seances.filter((s) => s.date >= limite && s.date <= today && s.statut === 'effectue')
@@ -56,10 +59,9 @@ export default function Stats() {
   const nouveauxCeMois = patients.filter((p) => p.creeLe.slice(0, 7) === mois).length
 
   const effectuees = seances.filter((s) => s.statut === 'effectue')
-  const parPatient = patients.length > 0
-    ? (effectuees.length / new Set(effectuees.map((s) => s.patientId)).size)
+  const parPatient = effectuees.length > 0
+    ? effectuees.length / new Set(effectuees.map((s) => s.patientId)).size
     : 0
-
   const revenuMoyen = b.nbDues > 0 ? Math.round(b.partPsy / b.nbDues) : 0
 
   const derniersMois = useMemo(() => {
@@ -77,10 +79,12 @@ export default function Stats() {
   }, [seances, mois])
 
   const maxPart = Math.max(1, ...derniersMois.map((m) => m.part))
+  const partAnimee = useCompteur(b.partPsy)
 
   if (seances.length === 0) {
     return (
       <div className="vide">
+        <span className="disque grand"><IconeStats taille={22} /></span>
         <strong>Pas encore de chiffres</strong>
         Ils apparaîtront dès que vous aurez enregistré des séances.
       </div>
@@ -89,92 +93,137 @@ export default function Stats() {
 
   return (
     <>
-      <div className="section-titre">Six derniers mois — ma part</div>
-      <div className="carte">
-        <div className="barres">
-          {derniersMois.map((m) => (
-            <div className="barre-col" key={m.mois} title={`${moisLibelle(m.mois)} : ${da(m.part)}`}>
-              <div
-                className="barre"
-                style={{
-                  height: `${Math.max(3, (m.part / maxPart) * 100)}%`,
-                  opacity: m.mois === mois ? 1 : .55,
-                }}
-              />
-            </div>
-          ))}
+      <section className="carte-hero">
+        <span className="bulle bulle-1" />
+        <span className="bulle bulle-2" />
+        <div className="hero-interieur">
+          <div className="hero-ligne">
+            <span className="hero-badge"><IconePortefeuille /> Mois en cours</span>
+            <span className="hero-note">{moisLibelle(mois)}</span>
+          </div>
+          <div className="hero-montant">
+            <span className="nombre">{montantSeul(partAnimee)}</span>
+            <span className="unite">DA</span>
+          </div>
+          <p className="hero-legende">
+            {b.nbDues} séance{b.nbDues > 1 ? 's' : ''} due{b.nbDues > 1 ? 's' : ''} ce mois-ci
+          </p>
+          <div className="hero-pied">
+            <span className="clef">Agenda rempli</span>
+            <span className="valeur">{pourcent(remplissage)} · {duMoisEcoule.length} / {capacite}</span>
+          </div>
+          <div className="hero-jauge">
+            <span style={{ width: `${Math.min(100, remplissage)}%` }} />
+          </div>
         </div>
-        <div className="barre-libs">
-          {derniersMois.map((m) => (
-            <div className="barre-lib" key={m.mois}>
-              {MOIS_COURTS[Number(m.mois.split('-')[1]) - 1]}
-            </div>
-          ))}
-        </div>
-        <div className="rang">
-          <span className="rang-lib">Meilleur mois affiché</span>
-          <span className="rang-val">{da(maxPart)}</span>
-        </div>
-      </div>
+      </section>
 
-      <div className="section-titre">{moisLibelle(mois)}</div>
-      <div className="chiffres">
-        <div className="chiffre">
-          <div className="val">{remplissage} %</div>
-          <div className="lib">Agenda rempli ({duMoisEcoule.length} / {capacite})</div>
+      <section>
+        <div className="entete-section">
+          <h3>Six derniers mois — ma part</h3>
+          <span className="entete-note">Sommet : <strong>{da(maxPart)}</strong></span>
         </div>
-        <div className="chiffre">
-          <div className="val">{b.nbDues}</div>
-          <div className="lib">Séances dues</div>
+        <div className="carte">
+          <div className="barres">
+            {derniersMois.map((m) => (
+              <div className="barre-col" key={m.mois} title={`${moisLibelle(m.mois)} : ${da(m.part)}`}>
+                <div
+                  className={`barre${m.mois === mois ? ' actuelle' : ''}`}
+                  style={{ height: `${Math.max(4, (m.part / maxPart) * 100)}%` }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="barre-libs">
+            {derniersMois.map((m) => (
+              <div className={`barre-lib${m.mois === mois ? ' actuelle' : ''}`} key={m.mois}>
+                {MOIS_COURTS[Number(m.mois.split('-')[1]) - 1]}
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="chiffre">
-          <div className="val">{fileActive}</div>
-          <div className="lib">Patients suivis (3 mois)</div>
-        </div>
-        <div className="chiffre">
-          <div className="val">{nouveauxCeMois}</div>
-          <div className="lib">Nouveaux dossiers</div>
-        </div>
-      </div>
+      </section>
 
-      <div className="section-titre">Régularité</div>
-      <div className="carte">
-        <div className="rang">
-          <span className="rang-lib">Absences non excusées</span>
-          <span className="rang-val">{tauxAbsence} %</span>
+      <section className="duo-cartes">
+        <div className="carte-stat">
+          <div className="stat-entete">
+            <span className="disque"><IconePatients taille={16} /></span>
+            <span className="stat-libelle">Patients suivis</span>
+          </div>
+          <div className="stat-valeur"><span className="nombre">{fileActive}</span></div>
+          <p className="stat-detail">Sur les trois derniers mois</p>
         </div>
-        <div className="rang">
-          <span className="rang-lib">Annulations</span>
-          <span className="rang-val">{tauxAnnulation} %</span>
+        <div className="carte-stat">
+          <div className="stat-entete">
+            <span className="disque"><IconeAgenda taille={16} /></span>
+            <span className="stat-libelle">Nouveaux dossiers</span>
+          </div>
+          <div className="stat-valeur"><span className="nombre">{nouveauxCeMois}</span></div>
+          <p className="stat-detail">Ouverts en {moisLibelle(mois)}</p>
         </div>
-        <div className="rang">
-          <span className="rang-lib">Séances par patient (moyenne)</span>
-          <span className="rang-val">{parPatient.toFixed(1)}</span>
-        </div>
-        <div className="rang">
-          <span className="rang-lib">Ma part par séance (moyenne)</span>
-          <span className="rang-val">{da(revenuMoyen)}</span>
-        </div>
-      </div>
+      </section>
 
-      <div className="section-titre">Répartition de la semaine type</div>
-      <div className="carte">
-        {reglages.joursTravail.map((j) => {
-          const nb = seances.filter((s) => jourDeIso(s.date) === j && s.date.startsWith(mois)).length
-          return (
-            <div className="rang" key={j}>
-              <span className="rang-lib" style={{ textTransform: 'capitalize' }}>
-                {['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'][j]}
-              </span>
-              <span className="rang-val">{nb} séance{nb > 1 ? 's' : ''}</span>
-            </div>
-          )
-        })}
-      </div>
+      <section>
+        <div className="entete-section"><h3>Régularité</h3></div>
+        <div className="carte">
+          <div className="rang">
+            <span className="rang-lib"><IconeAbsence taille={16} /> Absences non excusées</span>
+            <span className="rang-val">{pourcent(tauxAbsence)}</span>
+          </div>
+          <div className="rang">
+            <span className="rang-lib doux">Annulations</span>
+            <span className="rang-val">{pourcent(tauxAnnulation)}</span>
+          </div>
+          <div className="rang">
+            <span className="rang-lib doux">Séances par patient (moyenne)</span>
+            <span className="rang-val">{parPatient.toFixed(1)}</span>
+          </div>
+          <div className="rang">
+            <span className="rang-lib doux">Ma part par séance (moyenne)</span>
+            <span className="rang-val fort">{da(revenuMoyen)}</span>
+          </div>
+        </div>
+      </section>
 
-      <p style={{ color: 'var(--doux)', fontSize: '.8rem', margin: '18px 2px 0' }}>
+      <section>
+        <div className="entete-section"><h3>Semaine type</h3></div>
+        <div className="carte">
+          {reglages.joursTravail.map((j) => {
+            const nb = seances.filter((s) => jourDeIso(s.date) === j && s.date.startsWith(mois)).length
+            const max = Math.max(
+              1,
+              ...reglages.joursTravail.map((k) =>
+                seances.filter((s) => jourDeIso(s.date) === k && s.date.startsWith(mois)).length),
+            )
+            return (
+              <div className="rang" key={j}>
+                <span className="rang-lib" style={{ textTransform: 'capitalize' }}>{JOURS[j]}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    display: 'block',
+                    width: 68, height: 6, borderRadius: 99,
+                    background: 'rgba(168, 207, 203, .45)',
+                    overflow: 'hidden',
+                  }}>
+                    <span style={{
+                      display: 'block', height: '100%', borderRadius: 99,
+                      width: `${(nb / max) * 100}%`,
+                      background: 'var(--teal)',
+                      transformOrigin: 'left',
+                      animation: 'glisseBarre .7s var(--sortie) both .15s',
+                    }} />
+                  </span>
+                  <span className="rang-val">{nb}</span>
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      <p style={{ color: 'var(--texte-doux)', fontSize: '.78rem', margin: '4px 4px 0' }}>
         Calculé sur {seances.length} séance{seances.length > 1 ? 's' : ''} enregistrée
-        {seances.length > 1 ? 's' : ''}, depuis {dateDeIso(seances.reduce((min, s) => (s.date < min ? s.date : min), seances[0].date)).getFullYear()}.
+        {seances.length > 1 ? 's' : ''}.
       </p>
     </>
   )

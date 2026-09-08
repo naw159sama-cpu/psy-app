@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import ListeCreneaux from '../composants/ListeCreneaux'
+import { useCompteur } from '../composants/Compteur'
 import { useDonnees } from '../lib/store'
 import {
   aujourdhui, ajouterJours, debutSemaine, dateDeIso, jourDeIso, JOURS, MOIS,
 } from '../lib/dates'
-import { da } from '../lib/format'
+import { montantSeul, pourcent } from '../lib/format'
 import { bilan } from '../lib/argent'
-import { FlecheDroite, FlecheGauche } from '../composants/Icones'
+import {
+  FlecheDroite, FlecheGauche, IconeAgenda, IconePortefeuille,
+} from '../composants/Icones'
 
 interface Props {
   onOuvrirSeance: (seanceId: string) => void
@@ -16,10 +19,10 @@ interface Props {
 function libelleSemaine(debut: string): string {
   const d1 = dateDeIso(debut)
   const d2 = dateDeIso(ajouterJours(debut, 6))
-  const m1 = MOIS[d1.getMonth()].slice(0, 4)
-  const m2 = MOIS[d2.getMonth()].slice(0, 4)
-  if (d1.getMonth() === d2.getMonth()) return `${d1.getDate()} – ${d2.getDate()} ${MOIS[d2.getMonth()]}`
-  return `${d1.getDate()} ${m1}. – ${d2.getDate()} ${m2}.`
+  if (d1.getMonth() === d2.getMonth()) {
+    return `${d1.getDate()} – ${d2.getDate()} ${MOIS[d2.getMonth()]}`
+  }
+  return `${d1.getDate()} ${MOIS[d1.getMonth()].slice(0, 4)}. – ${d2.getDate()} ${MOIS[d2.getMonth()].slice(0, 4)}.`
 }
 
 export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
@@ -33,6 +36,8 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
   const dansLaSemaine = seances.filter((s) => s.date >= debut && s.date <= ajouterJours(debut, 6))
   const b = bilan(dansLaSemaine)
   const capacite = jours.length * reglages.creneaux.length
+  const partAnimee = useCompteur(b.partPsy)
+  const cetteSemaine = debutSemaine(today) === debut
 
   return (
     <>
@@ -40,49 +45,59 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
         <button className="fleche" aria-label="Semaine précédente" onClick={() => setDebut(ajouterJours(debut, -7))}>
           <FlecheGauche />
         </button>
-        <div className="periode-titre">{libelleSemaine(debut)}</div>
+        <span className="periode-titre">{libelleSemaine(debut)}</span>
         <button className="fleche" aria-label="Semaine suivante" onClick={() => setDebut(ajouterJours(debut, 7))}>
           <FlecheDroite />
         </button>
       </div>
 
-      {debutSemaine(today) !== debut && (
-        <button
-          className="btn bloc"
-          style={{ marginBottom: 6 }}
-          onClick={() => setDebut(debutSemaine(today))}
-        >
+      {!cetteSemaine && (
+        <button className="btn bloc" onClick={() => setDebut(debutSemaine(today))}>
           Revenir à cette semaine
         </button>
       )}
 
-      <div className="chiffres" style={{ marginTop: 12 }}>
-        <div className="chiffre">
-          <div className="val">
-            {dansLaSemaine.length}
-            <span style={{ fontSize: '.9rem', fontWeight: 500, color: 'var(--doux)' }}> / {capacite}</span>
+      <section className="duo-cartes">
+        <div className="carte-stat">
+          <div className="stat-entete">
+            <span className="disque"><IconeAgenda taille={16} /></span>
+            <span className="stat-libelle">Créneaux pris</span>
           </div>
-          <div className="lib">Créneaux pris</div>
+          <div className="stat-valeur">
+            <span className="nombre">{dansLaSemaine.length}</span>
+            <span className="unite">/ {capacite}</span>
+          </div>
+          <p className="stat-detail">
+            {pourcent(capacite > 0 ? Math.round((dansLaSemaine.length / capacite) * 100) : 0)} de la semaine
+          </p>
         </div>
-        <div className="chiffre plein">
-          <div className="val">{da(b.partPsy)}</div>
-          <div className="lib">Ma part sur la semaine</div>
+        <div className="carte-stat">
+          <div className="stat-entete">
+            <span className="disque"><IconePortefeuille /></span>
+            <span className="stat-libelle">Ma part</span>
+          </div>
+          <div className="stat-valeur">
+            <span className="nombre">{montantSeul(partAnimee)}</span>
+            <span className="unite">DA</span>
+          </div>
+          <p className="stat-detail">{b.nbDues} séance{b.nbDues > 1 ? 's' : ''} due{b.nbDues > 1 ? 's' : ''}</p>
         </div>
-      </div>
+      </section>
 
       {jours.map((d) => (
-        <div key={d}>
-          <div className={`jour-titre${d === today ? ' actuel' : ''}`}>
+        <section key={d}>
+          <div className="jour-titre">
             {JOURS[jourDeIso(d)]}
             <small>{dateDeIso(d).getDate()} {MOIS[dateDeIso(d).getMonth()]}</small>
-            {d === today && <small style={{ color: 'var(--accent)' }}>· aujourd’hui</small>}
+            {d === today && <span className="aujourdhui">aujourd’hui</span>}
           </div>
           <ListeCreneaux date={d} onOuvrirSeance={onOuvrirSeance} onCreneauLibre={onCreneauLibre} />
-        </div>
+        </section>
       ))}
 
       {jours.length === 0 && (
         <div className="vide">
+          <span className="disque grand"><IconeAgenda taille={22} /></span>
           <strong>Aucun jour de travail configuré</strong>
           Choisissez vos jours dans les réglages.
         </div>

@@ -1,17 +1,20 @@
 import { useMemo } from 'react'
 import ListeCreneaux from '../composants/ListeCreneaux'
+import { useCompteur } from '../composants/Compteur'
 import { useDonnees } from '../lib/store'
 import { aujourdhui, ajouterJours, dateLongue, jourDeIso, JOURS } from '../lib/dates'
-import { da } from '../lib/format'
-import { bilan, estDue, partPsy } from '../lib/argent'
+import { da, initiales, montantSeul } from '../lib/format'
+import { estDue, partPsy } from '../lib/argent'
 import { nomAffiche } from '../lib/affichage'
+import {
+  IconeAttente, IconeCadenas, IconeNote, IconePortefeuille, IconeAgenda,
+} from '../composants/Icones'
 
 interface Props {
   onOuvrirSeance: (seanceId: string) => void
   onCreneauLibre: (date: string, creneau: number) => void
 }
 
-/** Trouve le prochain jour travaillé, aujourd'hui compris. */
 function prochainJourTravaille(jours: number[]): string {
   let d = aujourdhui()
   for (let i = 0; i < 14; i++) {
@@ -31,98 +34,138 @@ export default function Jour({ onOuvrirSeance, onCreneauLibre }: Props) {
   const estAujourdhui = date === today
 
   const duJour = seances.filter((s) => s.date === date)
-  const b = bilan(duJour)
-  const aEncaisser = duJour.filter((s) => estDue(s.statut) && !s.paye)
   // Ce que la journée rapporte si tout se déroule comme prévu : les séances encore
-  // « prévues » comptent, sinon le matin l'écran affiche toujours 0.
+  // « prévues » comptent, sinon le matin l'écran affiche toujours zéro.
   const partDuJour = duJour.reduce(
-    (t, s) => t + (s.statut === 'prevu'
-      ? Math.round((s.tarif * s.partPsyPct) / 100)
-      : partPsy(s)),
+    (t, s) => t + (s.statut === 'prevu' ? Math.round((s.tarif * s.partPsyPct) / 100) : partPsy(s)),
     0,
   )
-  const toutJoue = duJour.every((s) => s.statut !== 'prevu')
+  const partAnimee = useCompteur(partDuJour)
+  const toutJoue = duJour.length > 0 && duJour.every((s) => s.statut !== 'prevu')
+  const impayesDuJour = duJour.filter((s) => estDue(s.statut) && !s.paye)
 
-  // Ce qui traîne : séances passées effectuées sans note, et impayés d'avant aujourd'hui.
   const notesEnRetard = seances
     .filter((s) => s.date < today && s.statut === 'effectue' && !s.note.trim())
-    .sort((a, b2) => (a.date < b2.date ? 1 : -1))
-  const impayesAnciens = seances
-    .filter((s) => s.date < date && estDue(s.statut) && !s.paye)
+    .sort((a, b) => (a.date < b.date ? 1 : -1))
+  const impayesAnciens = seances.filter((s) => s.date < date && estDue(s.statut) && !s.paye)
+
+  const nom = (id: string) => nomAffiche(patients.find((p) => p.id === id), false)
+  const mono = (id: string) => {
+    const p = patients.find((x) => x.id === id)
+    return p ? initiales(p.prenom, p.nom) : '?'
+  }
 
   return (
     <>
       {!estAujourdhui && (
-        <div className="avert" style={{ marginBottom: 14 }}>
-          <strong>Vous ne travaillez pas aujourd’hui.</strong>
-          Voici votre prochaine journée, {JOURS[jourDeIso(date)]}.
+        <div className="note-confidentielle">
+          <IconeAgenda taille={18} />
+          <span>
+            <strong>Vous ne travaillez pas aujourd’hui.</strong>
+            Voici votre prochaine journée, {JOURS[jourDeIso(date)]} — {dateLongue(date)}.
+          </span>
         </div>
       )}
 
       <ListeCreneaux date={date} onOuvrirSeance={onOuvrirSeance} onCreneauLibre={onCreneauLibre} />
 
-      <div className="section-titre">Cette journée</div>
-      <div className="chiffres">
-        <div className="chiffre">
-          <div className="val">{duJour.length}<span style={{ fontSize: '.9rem', fontWeight: 500, color: 'var(--doux)' }}> / {reglages.creneaux.length}</span></div>
-          <div className="lib">Créneaux pris</div>
-        </div>
-        <div className="chiffre plein">
-          <div className="val">{da(partDuJour)}</div>
-          <div className="lib">{toutJoue ? 'Ma part' : 'Ma part si tout se fait'}</div>
-        </div>
-        {b.impaye > 0 && (
-          <div className="chiffre large">
-            <div className="val">{da(b.impaye)}</div>
-            <div className="lib">
-              Reste à encaisser aujourd’hui ({aEncaisser.length} séance{aEncaisser.length > 1 ? 's' : ''})
-            </div>
+      <section className="duo-cartes">
+        <div className="carte-stat">
+          <div className="stat-entete">
+            <span className="disque"><IconeAgenda taille={16} /></span>
+            <span className="stat-libelle">Créneaux pris</span>
           </div>
-        )}
-      </div>
+          <div className="stat-valeur">
+            <span className="nombre">{duJour.length}</span>
+            <span className="unite">/ {reglages.creneaux.length}</span>
+          </div>
+          <p className="stat-detail">
+            {reglages.creneaux.length - duJour.length === 0
+              ? 'Journée complète'
+              : `${reglages.creneaux.length - duJour.length} encore libre${
+                  reglages.creneaux.length - duJour.length > 1 ? 's' : ''}`}
+          </p>
+        </div>
+        <div className="carte-stat">
+          <div className="stat-entete">
+            <span className="disque"><IconePortefeuille /></span>
+            <span className="stat-libelle">Ma part</span>
+          </div>
+          <div className="stat-valeur">
+            <span className="nombre">{montantSeul(partAnimee)}</span>
+            <span className="unite">DA</span>
+          </div>
+          <p className="stat-detail">
+            {impayesDuJour.length > 0
+              ? `${da(impayesDuJour.reduce((t, s) => t + s.tarif, 0))} à encaisser`
+              : toutJoue ? 'Journée soldée' : 'Si tout se fait'}
+          </p>
+        </div>
+      </section>
 
       {notesEnRetard.length > 0 && (
-        <>
-          <div className="section-titre">Notes à écrire ({notesEnRetard.length})</div>
-          <div className="carte">
-            {notesEnRetard.slice(0, 5).map((s) => {
-              const p = patients.find((x) => x.id === s.patientId)
-              return (
-                <button key={s.id} className="ligne" onClick={() => onOuvrirSeance(s.id)}>
-                  <span className="ligne-corps">
-                    <span className={`ligne-titre${reglages.masquerNoms ? ' flou' : ''}`}>
-                      {nomAffiche(p, false)}
-                    </span>
-                    <span className="ligne-sous">{dateLongue(s.date)}</span>
-                  </span>
-                  <span className="puce attente">À noter</span>
-                </button>
-              )
-            })}
+        <section>
+          <div className="entete-section">
+            <h3>Notes à écrire <span className="compteur">{notesEnRetard.length}</span></h3>
           </div>
-        </>
+          <div className="pile">
+            {notesEnRetard.slice(0, 4).map((s) => (
+              <button key={s.id} className="carte-ligne" onClick={() => onOuvrirSeance(s.id)}>
+                <span className="disque grand"><IconeNote taille={19} /></span>
+                <span className="ligne-corps">
+                  <span className="ligne-titre">
+                    <span className={`nom${reglages.masquerNoms ? ' flou' : ''}`}>
+                      {nom(s.patientId)}
+                    </span>
+                  </span>
+                  <span className="ligne-sous">{dateLongue(s.date)}</span>
+                </span>
+                <span className="puce attente">À noter</span>
+              </button>
+            ))}
+          </div>
+        </section>
       )}
 
       {impayesAnciens.length > 0 && (
-        <>
-          <div className="section-titre">Impayés plus anciens ({impayesAnciens.length})</div>
-          <div className="carte">
-            {impayesAnciens.slice(0, 5).map((s) => {
-              const p = patients.find((x) => x.id === s.patientId)
-              return (
-                <button key={s.id} className="ligne" onClick={() => onOuvrirSeance(s.id)}>
-                  <span className="ligne-corps">
-                    <span className={`ligne-titre${reglages.masquerNoms ? ' flou' : ''}`}>
-                      {nomAffiche(p, false)}
-                    </span>
-                    <span className="ligne-sous">{dateLongue(s.date)}</span>
-                  </span>
-                  <span className="rang-val">{da(s.tarif)}</span>
-                </button>
-              )
-            })}
+        <section>
+          <div className="entete-section">
+            <h3>Impayés plus anciens <span className="compteur">{impayesAnciens.length}</span></h3>
+            <span className="entete-note">
+              Total : <strong>{da(impayesAnciens.reduce((t, s) => t + s.tarif, 0))}</strong>
+            </span>
           </div>
-        </>
+          <div className="pile">
+            {impayesAnciens.slice(0, 4).map((s) => (
+              <button key={s.id} className="carte-ligne" onClick={() => onOuvrirSeance(s.id)}>
+                <span className="monogramme">{mono(s.patientId)}</span>
+                <span className="ligne-corps">
+                  <span className="ligne-titre">
+                    <span className={`nom${reglages.masquerNoms ? ' flou' : ''}`}>
+                      {nom(s.patientId)}
+                    </span>
+                  </span>
+                  <span className="ligne-sous">
+                    <span className="accent">{da(s.tarif)}</span>
+                    <span>·</span>
+                    <span>{dateLongue(s.date)}</span>
+                  </span>
+                </span>
+                <span className="disque"><IconeAttente taille={16} /></span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {reglages.masquerNoms && (
+        <div className="note-confidentielle">
+          <IconeCadenas taille={17} />
+          <span>
+            <strong>Écran de confidentialité actif</strong>
+            Les noms des patients sont masqués. Touchez l’œil en haut pour les réafficher.
+          </span>
+        </div>
       )}
     </>
   )

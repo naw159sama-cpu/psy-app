@@ -31,11 +31,25 @@ Puis `npm run build` pour la version de production (dossier `dist/`), à dépose
 n'importe quel hébergement de fichiers statiques. Le service worker rend l'application
 utilisable hors connexion une fois installée.
 
+## L'identité visuelle — « Cabinet Serein »
+
+Le système de design est décrit dans [docs/design.md](docs/design.md) : fond menthe pâle,
+cartes crème, teals minéraux, et **un seul point corail par écran** (le bouton flottant,
+ou la ligne « reste dû »). Typographie Plus Jakarta Sans. Formes arrondies, ombres
+diffuses teintées, jamais de noir pur ni de blanc pur.
+
+Les animations sont écrites à la main dans `src/styles.css` et respectent
+`prefers-reduced-motion`.
+
 ## Comment c'est fait
 
 React + TypeScript, construit par Vite. Aucune dépendance en dehors de React :
 pas de routeur, pas de librairie de composants, pas de librairie de dates ni de
 graphiques. C'est volontaire — le projet doit rester réparable dans trois ans.
+
+La typographie Plus Jakarta Sans vient de Google Fonts ; hors connexion, l'application
+retombe sur la police système sans rien casser. Les icônes sont des SVG écrits à la main,
+donc toujours disponibles hors ligne.
 
 Les données vivent dans le `localStorage` du navigateur, sérialisées en un seul objet
 JSON. Pas de serveur, pas de compte, rien qui sorte du téléphone. La sauvegarde est
@@ -50,7 +64,7 @@ src/
     dates.ts      Dates en heure locale, semaine commençant le samedi
     affichage.ts  Libellés français, masquage des noms
     demo.ts       Jeu de démonstration, patients nommés « Démo »
-  composants/     Feuilles modales, liste de créneaux, icônes
+  composants/     Feuilles modales, liste de créneaux, icônes, compteur animé
   ecrans/         Un fichier par onglet
 ```
 

@@ -4,6 +4,7 @@ import { useDonnees, ajouterPatient, ajouterSeance } from '../lib/store'
 import { dateLongue } from '../lib/dates'
 import { initiales, normaliser } from '../lib/format'
 import { nomAffiche } from '../lib/affichage'
+import { Chevron, IconePatients, IconePlus } from './Icones'
 
 interface Props {
   date: string
@@ -72,17 +73,11 @@ export default function FeuilleChoixPatient({ date, creneau, onFermer, onSeanceC
           <div className="champ">
             <label htmlFor="np-tel">Téléphone</label>
             <input id="np-tel" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} />
+            <p className="aide">Le reste du dossier pourra être complété plus tard.</p>
           </div>
-          <p className="aide" style={{ color: 'var(--doux)', fontSize: '.82rem', marginBottom: 14 }}>
-            Le reste du dossier pourra être complété plus tard.
-          </p>
           <div className="btn-rang">
             <button className="btn" onClick={() => setCreation(false)}>Retour</button>
-            <button
-              className="btn principal"
-              disabled={!prenom.trim() && !nom.trim()}
-              onClick={creer}
-            >
+            <button className="btn principal" disabled={!prenom.trim() && !nom.trim()} onClick={creer}>
               Créer et placer
             </button>
           </div>
@@ -96,31 +91,38 @@ export default function FeuilleChoixPatient({ date, creneau, onFermer, onSeanceC
             onChange={(e) => setRecherche(e.target.value)}
           />
 
-          <button
-            className="btn principal bloc"
-            style={{ marginTop: 12 }}
-            onClick={() => setCreation(true)}
-          >
+          <button className="btn corail bloc" style={{ marginTop: 12 }} onClick={() => setCreation(true)}>
+            <IconePlus taille={18} />
             Nouveau patient
           </button>
 
           {listeTriee.length === 0 ? (
-            <div className="vide">
-              {patients.length === 0
-                ? <><strong>Aucun patient pour l’instant</strong>Créez le premier ci-dessus.</>
-                : <>Aucun patient ne correspond.</>}
+            <div className="vide" style={{ marginTop: 16 }}>
+              <span className="disque grand"><IconePatients taille={22} /></span>
+              {patients.length === 0 ? (
+                <><strong>Aucun patient pour l’instant</strong>Créez le premier ci-dessus.</>
+              ) : (
+                'Aucun patient ne correspond.'
+              )}
             </div>
           ) : (
-            <div className="carte" style={{ marginTop: 14 }}>
+            <div className="pile" style={{ marginTop: 14 }}>
               {listeTriee.map((p) => (
-                <button key={p.id} className="ligne" onClick={() => placer(p.id)}>
-                  <span className={`pastille ${p.statut === 'actif' ? '' : p.statut}`}>
+                <button key={p.id} className="carte-ligne" onClick={() => placer(p.id)}>
+                  <span className={`monogramme ${p.statut === 'actif' ? '' : p.statut}`}>
                     {initiales(p.prenom, p.nom)}
                   </span>
                   <span className="ligne-corps">
-                    <span className="ligne-titre">{nomAffiche(p, reglages.masquerNoms)}</span>
-                    <span className="ligne-sous">{p.motif || p.telephone || 'Dossier à compléter'}</span>
+                    <span className="ligne-titre">
+                      <span className={`nom${reglages.masquerNoms ? ' flou' : ''}`}>
+                        {nomAffiche(p, false)}
+                      </span>
+                    </span>
+                    <span className="ligne-sous">
+                      {p.motif || p.telephone || 'Dossier à compléter'}
+                    </span>
                   </span>
+                  <Chevron />
                 </button>
               ))}
             </div>

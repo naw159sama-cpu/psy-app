@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Jour from './ecrans/Jour'
 import Agenda from './ecrans/Agenda'
 import Patients from './ecrans/Patients'
@@ -9,12 +9,15 @@ import Reglages from './ecrans/Reglages'
 import FeuilleSeance from './composants/FeuilleSeance'
 import FeuilleChoixPatient from './composants/FeuilleChoixPatient'
 import FeuilleNouveauPatient from './composants/FeuilleNouveauPatient'
+import FeuilleRappels from './composants/FeuilleRappels'
 import {
-  IconeAgenda, IconeArgent, IconeJour, IconeOeil, IconePatients, IconeReglages,
-  IconeRetour, IconeStats,
+  IconeAgenda, IconeArgent, IconeCloche, IconeJour, IconeOeil, IconePatients,
+  IconePlus, IconeReglages, IconeRetour, IconeStats,
 } from './composants/Icones'
 import { useDonnees, basculerMasquage } from './lib/store'
-import { aujourdhui, dateLongue } from './lib/dates'
+import { aujourdhui, ajouterJours, dateLongue, jourDeIso } from './lib/dates'
+import { estDue } from './lib/argent'
+import { initiales } from './lib/format'
 import { nomAffiche } from './lib/affichage'
 
 type Onglet = 'jour' | 'agenda' | 'patients' | 'argent' | 'stats'
@@ -26,6 +29,7 @@ type Panneau =
   | { type: 'seance'; id: string }
   | { type: 'choix'; date: string; creneau: number }
   | { type: 'nouveau-patient' }
+  | { type: 'rappels' }
   | null
 
 const ONGLETS: Array<{ cle: Onglet; libelle: string; Icone: typeof IconeJour }> = [
@@ -36,13 +40,30 @@ const ONGLETS: Array<{ cle: Onglet; libelle: string; Icone: typeof IconeJour }> 
   { cle: 'stats', libelle: 'Bilan', Icone: IconeStats },
 ]
 
+const TITRES: Record<Onglet, { surtitre: string; titre: string }> = {
+  jour: { surtitre: 'Consultations du jour', titre: 'Ma journée' },
+  agenda: { surtitre: 'Planning de la semaine', titre: 'Agenda' },
+  patients: { surtitre: 'Dossiers cliniques', titre: 'Patients' },
+  argent: { surtitre: 'Facturation & honoraires', titre: 'Argent' },
+  stats: { surtitre: 'Activité du cabinet', titre: 'Bilan' },
+}
+
+/** Prochain jour travaillé, aujourd'hui compris — sert au bouton « nouveau rendez-vous ». */
+function prochainJourTravaille(jours: number[]): string {
+  let d = aujourdhui()
+  for (let i = 0; i < 14; i++) {
+    if (jours.includes(jourDeIso(d))) return d
+    d = ajouterJours(d, 1)
+  }
+  return aujourdhui()
+}
+
 export default function App() {
-  const { patients, reglages } = useDonnees()
+  const { patients, seances, reglages } = useDonnees()
   const [onglet, setOnglet] = useState<Onglet>('jour')
   const [vue, setVue] = useState<Vue>({ type: 'onglet' })
   const [panneau, setPanneau] = useState<Panneau>(null)
 
-  // Confort de lecture choisi dans les réglages.
   useEffect(() => {
     const e = localStorage.getItem('psy-app:echelle')
     if (e) document.documentElement.style.setProperty('--echelle', e)
@@ -60,78 +81,127 @@ export default function App() {
     return () => document.removeEventListener('keydown', k)
   }, [])
 
+  const today = aujourdhui()
+  const nbRappels = useMemo(() => {
+    const notes = seances.filter((s) => s.date < today && s.statut === 'effectue' && !s.note.trim())
+    const impayes = seances.filter((s) => s.date <= today && estDue(s.statut) && !s.paye)
+    return notes.length + impayes.length
+  }, [seances, today])
+
   const ouvrirSeance = (id: string) => setPanneau({ type: 'seance', id })
   const creneauLibre = (date: string, creneau: number) => setPanneau({ type: 'choix', date, creneau })
   const ouvrirPatient = (id: string) => { setPanneau(null); setVue({ type: 'patient', id }) }
   const allerOnglet = (o: Onglet) => { setOnglet(o); setVue({ type: 'onglet' }) }
 
+  /** Place un rendez-vous sur le premier créneau libre de la prochaine journée travaillée. */
+  const nouveauRendezVous = () => {
+    const date = prochainJourTravaille(reglages.joursTravail)
+    const pris = new Set(seances.filter((s) => s.date === date).map((s) => s.creneau))
+    const libre = reglages.creneaux.findIndex((_, i) => !pris.has(i))
+    if (libre === -1) {
+      setOnglet('agenda')
+      setVue({ type: 'onglet' })
+      return
+    }
+    creneauLibre(date, libre)
+  }
+
+  // Titre de page, bouton retour, et l'unique action corail de l'écran.
+  let surtitre = ''
   let titre = ''
-  let sous: string | null = null
+  let legende: string | null = null
   let retour: (() => void) | null = null
+  let fab: { libelle: string; action: () => void } | null = null
 
   if (vue.type === 'patient') {
     const p = patients.find((x) => x.id === vue.id)
+    surtitre = 'Dossier clinique'
     titre = nomAffiche(p, reglages.masquerNoms)
-    sous = p?.motif || 'Dossier patient'
+    legende = p?.motif || 'Suivi en cours'
     retour = () => setVue({ type: 'onglet' })
   } else if (vue.type === 'reglages') {
+    surtitre = 'Configuration'
     titre = 'Réglages'
     retour = () => setVue({ type: 'onglet' })
   } else {
-    switch (onglet) {
-      case 'jour':
-        titre = 'Ma journée'
-        sous = dateLongue(aujourdhui())
-        break
-      case 'agenda': titre = 'Agenda'; break
-      case 'patients': titre = 'Patients'; break
-      case 'argent': titre = 'Argent'; break
-      case 'stats': titre = 'Bilan'; break
+    surtitre = TITRES[onglet].surtitre
+    titre = TITRES[onglet].titre
+    if (onglet === 'jour') {
+      legende = dateLongue(today)
+      fab = { libelle: 'Nouveau rendez-vous', action: nouveauRendezVous }
+    }
+    if (onglet === 'agenda') fab = { libelle: 'Nouveau rendez-vous', action: nouveauRendezVous }
+    if (onglet === 'patients') {
+      fab = { libelle: 'Nouveau patient', action: () => setPanneau({ type: 'nouveau-patient' }) }
     }
   }
 
+  const nomCabinet = reglages.nomCabinet.trim() || 'Cabinet de psychologie'
+  const nomPraticienne = reglages.nomPraticienne.trim()
+  const monogramme = nomPraticienne
+    ? initiales(nomPraticienne.split(' ')[0] ?? '', nomPraticienne.split(' ').slice(1).join(' '))
+    : 'MC'
+
   return (
     <div className="app">
-      <header className="entete">
-        <div className="entete-ligne">
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', minWidth: 0 }}>
+      <header className="barre-haut">
+        <div className="identite">
+          <div className="avatar-cabinet">{monogramme}</div>
+          <div className="identite-textes">
+            <h1 className="identite-titre">{nomCabinet}</h1>
+            <p className="identite-sous">
+              {nomPraticienne ? `${nomPraticienne} · Psychologue` : 'Psychologue clinicienne'}
+            </p>
+          </div>
+        </div>
+        <div className="actions-haut">
+          <button
+            className={`bouton-rond${reglages.masquerNoms ? ' actif' : ''}`}
+            aria-label={reglages.masquerNoms ? 'Afficher les noms' : 'Masquer les noms'}
+            aria-pressed={reglages.masquerNoms}
+            title="Masquer les noms (Ctrl+M)"
+            onClick={basculerMasquage}
+          >
+            <IconeOeil barre={reglages.masquerNoms} />
+          </button>
+          <button
+            className="bouton-rond"
+            aria-label={`Rappels${nbRappels > 0 ? ` (${nbRappels})` : ''}`}
+            onClick={() => setPanneau({ type: 'rappels' })}
+          >
+            <IconeCloche />
+            {nbRappels > 0 && <span className="point-alerte" />}
+          </button>
+          {vue.type !== 'reglages' && (
+            <button
+              className="bouton-rond"
+              aria-label="Réglages"
+              onClick={() => setVue({ type: 'reglages' })}
+            >
+              <IconeReglages />
+            </button>
+          )}
+        </div>
+      </header>
+
+      <main className="contenu" key={vue.type === 'onglet' ? onglet : vue.type}>
+        <div className="titre-page">
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
             {retour && (
-              <button className="fleche" aria-label="Retour" onClick={retour} style={{ flex: '0 0 auto' }}>
+              <button className="rond-contour" aria-label="Retour" onClick={retour}>
                 <IconeRetour />
               </button>
             )}
             <div style={{ minWidth: 0 }}>
-              <h1 style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span className="surtitre">{surtitre}</span>
+              <h2 style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {titre}
-              </h1>
-              {sous && <p className="sous">{sous}</p>}
+              </h2>
+              {legende && <p className="legende">{legende}</p>}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, flex: '0 0 auto' }}>
-            <button
-              className="fleche"
-              aria-label={reglages.masquerNoms ? 'Afficher les noms' : 'Masquer les noms'}
-              aria-pressed={reglages.masquerNoms}
-              title="Masquer les noms (Ctrl+M)"
-              onClick={basculerMasquage}
-              style={reglages.masquerNoms ? { color: 'var(--accent)', borderColor: 'var(--accent)' } : undefined}
-            >
-              <IconeOeil barre={reglages.masquerNoms} />
-            </button>
-            {vue.type !== 'reglages' && (
-              <button
-                className="fleche"
-                aria-label="Réglages"
-                onClick={() => setVue({ type: 'reglages' })}
-              >
-                <IconeReglages taille={20} />
-              </button>
-            )}
-          </div>
         </div>
-      </header>
 
-      <main className="contenu">
         {vue.type === 'patient' ? (
           <FichePatient
             patientId={vue.id}
@@ -155,6 +225,13 @@ export default function App() {
           <Stats />
         )}
       </main>
+
+      {fab && (
+        <button className="fab" key={titre} onClick={fab.action}>
+          <IconePlus />
+          {fab.libelle}
+        </button>
+      )}
 
       <nav className="onglets" aria-label="Navigation principale">
         <div className="onglets-int">
@@ -193,6 +270,13 @@ export default function App() {
           onCree={(id) => ouvrirPatient(id)}
         />
       )}
+      {panneau?.type === 'rappels' && (
+        <FeuilleRappels
+          onFermer={() => setPanneau(null)}
+          onOuvrirSeance={ouvrirSeance}
+        />
+      )}
     </div>
   )
 }
+

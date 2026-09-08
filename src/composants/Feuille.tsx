@@ -32,7 +32,7 @@ export default function Feuille({ titre, sous, onFermer, children }: Props) {
         <div className="poignee" />
         <h2>{titre}</h2>
         {sous && <p className="sous">{sous}</p>}
-        {children}
+        <div className="contenu-feuille">{children}</div>
       </div>
     </div>
   )

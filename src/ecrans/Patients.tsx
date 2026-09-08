@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useDonnees } from '../lib/store'
 import { initiales, normaliser } from '../lib/format'
 import { LIBELLE_STATUT_PATIENT, nomAffiche } from '../lib/affichage'
-import { Chevron } from '../composants/Icones'
+import { Chevron, IconePatients } from '../composants/Icones'
 import type { StatutPatient } from '../lib/types'
 
 interface Props {
@@ -42,42 +42,53 @@ export default function Patients({ onOuvrirPatient, onNouveauPatient }: Props) {
         onChange={(e) => setRecherche(e.target.value)}
       />
 
-      <div className="choix" style={{ marginTop: 12 }}>
+      <div className="choix">
         {FILTRES.map((f) => (
           <button key={f.cle} aria-pressed={filtre === f.cle} onClick={() => setFiltre(f.cle)}>
-            {f.libelle} ({compte(f.cle)})
+            {f.libelle} · {compte(f.cle)}
           </button>
         ))}
       </div>
 
-      <button className="btn principal bloc" style={{ marginTop: 12 }} onClick={onNouveauPatient}>
-        Nouveau patient
-      </button>
-
       {liste.length === 0 ? (
         <div className="vide">
-          <strong>Aucun patient à afficher</strong>
-          {patients.length === 0
-            ? 'Ajoutez votre premier dossier avec le bouton ci-dessus.'
-            : 'Essayez un autre filtre ou une autre recherche.'}
+          <span className="disque grand"><IconePatients taille={22} /></span>
+          <strong>Aucun dossier à afficher</strong>
+          {patients.length === 0 ? (
+            <>
+              Créez le premier avec le bouton « Nouveau patient ».
+              <div style={{ marginTop: 16 }}>
+                <button className="btn principal" onClick={onNouveauPatient}>Nouveau patient</button>
+              </div>
+            </>
+          ) : (
+            'Essayez un autre filtre ou une autre recherche.'
+          )}
         </div>
       ) : (
-        <div className="carte" style={{ marginTop: 14 }}>
+        <div className="pile">
           {liste.map((p) => {
-            const nb = seances.filter((s) => s.patientId === p.id && s.statut === 'effectue').length
+            const siennes = seances.filter((s) => s.patientId === p.id)
+            const nb = siennes.filter((s) => s.statut === 'effectue').length
+            const impaye = siennes.some((s) => !s.paye && (s.statut === 'effectue' || s.statut === 'absent' || s.statut === 'annule_hors_delai'))
             return (
-              <button key={p.id} className="ligne" onClick={() => onOuvrirPatient(p.id)}>
-                <span className={`pastille ${p.statut === 'actif' ? '' : p.statut}`}>
+              <button key={p.id} className="carte-ligne" onClick={() => onOuvrirPatient(p.id)}>
+                <span className={`monogramme ${p.statut === 'actif' ? '' : p.statut}`}>
                   {initiales(p.prenom, p.nom)}
                 </span>
                 <span className="ligne-corps">
-                  <span className={`ligne-titre${reglages.masquerNoms ? ' flou' : ''}`}>
-                    {nomAffiche(p, false)}
+                  <span className="ligne-titre">
+                    <span className={`nom${reglages.masquerNoms ? ' flou' : ''}`}>
+                      {nomAffiche(p, false)}
+                    </span>
+                    {p.statut !== 'actif' && (
+                      <span className="puce gris">{LIBELLE_STATUT_PATIENT[p.statut]}</span>
+                    )}
+                    {impaye && <span className="puce attente">Impayé</span>}
                   </span>
                   <span className="ligne-sous">
-                    {nb} séance{nb > 1 ? 's' : ''}
-                    {p.motif ? ` · ${p.motif}` : ''}
-                    {p.statut !== 'actif' ? ` · ${LIBELLE_STATUT_PATIENT[p.statut]}` : ''}
+                    <span>{nb} séance{nb > 1 ? 's' : ''}</span>
+                    {p.motif && <><span>·</span><span>{p.motif}</span></>}
                   </span>
                 </span>
                 <Chevron />

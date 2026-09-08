@@ -79,3 +79,11 @@ export const MOIS_COURTS = [
   'janv', 'févr', 'mars', 'avr', 'mai', 'juin',
   'juil', 'août', 'sept', 'oct', 'nov', 'déc',
 ]
+
+/** "08/09" — sans l'année quand c'est l'année en cours, pour tenir sur une ligne. */
+export function dateBreve(iso: string): string {
+  const d = dateDeIso(iso)
+  const jm = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
+  const anneeCourante = new Date().getFullYear()
+  return d.getFullYear() === anneeCourante ? jm : `${jm}/${String(d.getFullYear()).slice(2)}`
+}

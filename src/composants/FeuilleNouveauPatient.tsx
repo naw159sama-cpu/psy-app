@@ -62,7 +62,7 @@ export default function FeuilleNouveauPatient({ onFermer, onCree }: Props) {
       </div>
       <div className="btn-rang">
         <button className="btn" onClick={onFermer}>Annuler</button>
-        <button className="btn principal" disabled={!valide} onClick={creer}>Créer le dossier</button>
+        <button className="btn corail" disabled={!valide} onClick={creer}>Créer le dossier</button>
       </div>
     </Feuille>
   )

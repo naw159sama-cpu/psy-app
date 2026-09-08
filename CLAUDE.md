@@ -32,6 +32,13 @@ Les tests utilisent le lanceur intégré de Node (aucune dépendance). Toute mod
   composants, de dates ou de graphiques : ils sont écrits à la main et doivent le rester.
 - Les styles vivent dans `src/styles.css`, avec des classes en français. Les variables CSS
   portent la palette ; ne pas écrire de couleur en dur dans un composant.
+- Le système visuel « Cabinet Serein » est documenté dans [docs/design.md](docs/design.md).
+  **Un seul élément corail par écran** : le bouton flottant, ou la ligne « reste dû ».
+- Les icônes sont des SVG maison dans `src/composants/Icones.tsx` (trait 1.5, bouts
+  arrondis). Ne pas introduire de police d'icônes : elle casserait l'affichage hors ligne.
+- Toute animation ajoutée doit être neutralisée par `prefers-reduced-motion`.
+- Les montants passent par `da()` / `montantSeul()` et les pourcentages par `pourcent()` :
+  ils portent les espaces insécables de la typographie française.
 - L'état passe par `src/lib/store.ts` (`useDonnees()` en lecture, fonctions dédiées en
   écriture). Pas de state global parallèle.
 - Cibles tactiles d'au moins 44 px de haut.
