@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "node --test \"tests/*.test.ts\"",
     "partage": "vite --host --port 5183",
-    "apercu": "vite preview --host --port 4183"
+    "apercu": "vite preview --host --port 4183",
+    "apercu-github": "node outils/serveur-sous-dossier.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

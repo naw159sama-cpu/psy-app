@@ -68,3 +68,48 @@ Un patient peut avoir un tarif à lui : ouvrir son dossier → *Prix de la séan
 
 *Réglages* → **Charger des données de démonstration** remplit l'application avec six dossiers
 fictifs nommés « Démo ». Pour repartir de zéro : *Réglages* → **Effacer toutes les données**.
+
+---
+
+# Publier l'application sur GitHub Pages
+
+À faire une seule fois. Ensuite, chaque modification envoyée sur GitHub met le
+site à jour toute seule.
+
+1. Créer un dépôt **public** sur GitHub, nommé par exemple `psy-app`.
+   (Pages est gratuit sur les dépôts publics ; sur un dépôt privé il faut un
+   abonnement payant. Le code est public, **pas les données** : celles-ci ne
+   quittent jamais le téléphone.)
+
+2. Depuis le dossier du projet :
+
+   ```bash
+   git remote add origin https://github.com/VOTRE-NOM/psy-app.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+3. Sur GitHub : onglet **Settings** → **Pages** → dans « Source », choisir
+   **GitHub Actions**. Rien d'autre à configurer.
+
+4. Onglet **Actions** : la publication démarre toute seule et prend une à deux
+   minutes. À la fin, l'adresse s'affiche :
+
+   ```
+   https://VOTRE-NOM.github.io/psy-app/
+   ```
+
+C'est ce lien à envoyer à la psychologue. Il est en `https`, donc elle peut
+l'ajouter à son écran d'accueil et l'application fonctionnera ensuite sans
+connexion.
+
+## Mettre à jour plus tard
+
+```bash
+git add -A
+git commit -m "ce qui a changé"
+git push
+```
+
+Le site se reconstruit tout seul. Les données déjà saisies sur son téléphone
+sont conservées : elles vivent dans le téléphone, pas dans le site.

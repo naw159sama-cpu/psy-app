@@ -1,8 +1,11 @@
 // Cache minimal : l'application reste utilisable sans connexion.
-const CACHE = 'cabinet-v1'
+// Tous les chemins sont relatifs à l'emplacement de ce fichier, pour que
+// l'application fonctionne aussi dans un sous-dossier (GitHub Pages).
+const CACHE = 'cabinet-v2'
+const ACCUEIL = new URL('./index.html', self.location).href
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/index.html'])))
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './index.html'])))
   self.skipWaiting()
 })
 
@@ -17,7 +20,12 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const req = e.request
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return
+  if (req.method !== 'GET') return
+  const url = new URL(req.url)
+  if (url.origin !== self.location.origin) return
+  // Ne rien intercepter en dehors du dossier de l'application.
+  if (!url.pathname.startsWith(new URL('./', self.location).pathname)) return
+
   e.respondWith(
     caches.match(req).then((hit) =>
       hit ||
@@ -27,7 +35,7 @@ self.addEventListener('fetch', (e) => {
           caches.open(CACHE).then((c) => c.put(req, copie))
           return rep
         })
-        .catch(() => caches.match('/index.html')),
+        .catch(() => caches.match(ACCUEIL)),
     ),
   )
 })

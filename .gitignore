@@ -1,3 +1,6 @@
 node_modules/
 dist/
 *.local
+
+# Ne jamais publier une sauvegarde : elle contient des données patients.
+sauvegarde-cabinet-*.json
