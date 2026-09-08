@@ -6,7 +6,8 @@ import {
 import { normaliserNumero } from '../lib/telephone'
 import { aujourdhui, ajouterJours } from '../lib/dates'
 import type { Modele, Patient, Seance } from '../lib/types'
-import { IconeCrayon } from './Icones'
+import { IconeCrayon, IconeMicro } from './Icones'
+import { dicteeDisponible } from '../lib/dictee'
 
 /** Patient d'exemple, quand aucun dossier réel n'existe encore. */
 const EXEMPLE: Patient = {
@@ -53,6 +54,37 @@ export default function ReglagesRappels() {
 
   return (
     <>
+      <section>
+        <div className="entete-section"><h3>Dictée vocale</h3></div>
+        {dicteeDisponible() ? (
+          <>
+            <button
+              className="rang rang-cliquable carte"
+              onClick={() => majReglages({ dicteeActive: !reglages.dicteeActive })}
+            >
+              <span className="rang-lib">
+                <span className="disque"><IconeMicro taille={15} /></span>
+                <span className="exclusion-textes">
+                  <span className="exclusion-nom">Bouton « Dicter » dans les champs</span>
+                  <span className="exclusion-motif">Anamnèse, motif, comptes rendus</span>
+                </span>
+              </span>
+              <span className={`interrupteur${reglages.dicteeActive ? ' actif' : ''}`} aria-hidden />
+            </button>
+            <p className="aide">
+              Le navigateur transmet la voix à son service de transcription, chez Google
+              ou Apple selon le téléphone. Pour une dictée qui ne sort pas de l’appareil,
+              utilisez la touche micro du clavier plutôt que ce bouton.
+            </p>
+          </>
+        ) : (
+          <p className="aide">
+            Ce navigateur ne sait pas dicter. La touche micro du clavier du téléphone
+            fonctionne dans tous les champs.
+          </p>
+        )}
+      </section>
+
       <section>
         <div className="entete-section"><h3>Rappels aux patients</h3></div>
 

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ChampDicte from '../composants/ChampDicte'
 import { useDonnees, majPatient, supprimerPatient } from '../lib/store'
 import { aujourdhui, dateCourte, age } from '../lib/dates'
 import { normaliserNumero } from '../lib/telephone'
@@ -244,10 +245,12 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
 
       <section>
         <div className="entete-section"><h3>Suivi clinique</h3></div>
-        <div className="champ">
-          <label htmlFor="fp-motif">Motif de consultation</label>
-          <input id="fp-motif" value={p.motif} onChange={(e) => maj({ motif: e.target.value })} />
-        </div>
+        <ChampDicte
+          id="fp-motif"
+          label="Motif de consultation"
+          valeur={p.motif}
+          onChange={(v) => maj({ motif: v })}
+        />
         <div className="champ">
           <label htmlFor="fp-adresse">Adressé par</label>
           <input
@@ -257,15 +260,13 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
             onChange={(e) => maj({ adressePar: e.target.value })}
           />
         </div>
-        <div className="champ">
-          <label htmlFor="fp-anamnese">Anamnèse et éléments de contexte</label>
-          <textarea
-            id="fp-anamnese"
-            rows={6}
-            value={p.anamnese}
-            onChange={(e) => maj({ anamnese: e.target.value })}
-          />
-        </div>
+        <ChampDicte
+          id="fp-anamnese"
+          label="Anamnèse et éléments de contexte"
+          valeur={p.anamnese}
+          onChange={(v) => maj({ anamnese: v })}
+          lignes={6}
+        />
       </section>
 
       <section>

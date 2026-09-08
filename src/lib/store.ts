@@ -27,6 +27,8 @@ export const REGLAGES_DEFAUT: Reglages = {
   modelesRappel: MODELES_DEFAUT,
   heureRappelQuotidien: '18:00',
   avertissementRappelsVu: false,
+  dicteeActive: true,
+  avertissementDicteeVu: false,
 }
 
 function vide(): Donnees {

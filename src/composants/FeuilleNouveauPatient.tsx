@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Feuille from './Feuille'
+import ChampDicte from './ChampDicte'
 import { ajouterPatient } from '../lib/store'
 
 interface Props {
@@ -56,15 +57,13 @@ export default function FeuilleNouveauPatient({ onFermer, onCree }: Props) {
         <label htmlFor="n-tel">Téléphone</label>
         <input id="n-tel" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} />
       </div>
-      <div className="champ">
-        <label htmlFor="n-motif">Motif de consultation</label>
-        <input
-          id="n-motif"
-          value={motif}
-          placeholder="Anxiété, deuil, suivi de l’enfant…"
-          onChange={(e) => setMotif(e.target.value)}
-        />
-      </div>
+      <ChampDicte
+        id="n-motif"
+        label="Motif de consultation"
+        valeur={motif}
+        onChange={setMotif}
+        placeholder="Anxiété, deuil, suivi de l’enfant…"
+      />
       <div className="btn-rang">
         <button className="btn" onClick={onFermer}>Annuler</button>
         <button className="btn corail" disabled={!valide} onClick={creer}>Créer le dossier</button>

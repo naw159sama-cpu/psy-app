@@ -363,3 +363,12 @@ export function IconeMessage({ taille = 16 }: Props) {
     </svg>
   )
 }
+
+export function IconeMicro({ taille = 16 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <rect x="9" y="2.8" width="6" height="11.4" rx="3" />
+      <path d="M5.4 11.4a6.6 6.6 0 0 0 13.2 0M12 18v3.2" />
+    </svg>
+  )
+}

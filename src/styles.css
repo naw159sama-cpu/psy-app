@@ -1373,6 +1373,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .mois-case.dehors.chomee { background: transparent; }
 .mois-case.actuel { box-shadow: inset 0 0 0 1.5px var(--encre); }
+/* Jour ouvert sous la grille : c'est le retour visuel du geste de sélection. */
+.mois-case.choisi {
+  background: var(--sauge-pale);
+  box-shadow: inset 0 0 0 2px var(--sauge);
+}
+.mois-case.choisi.actuel { box-shadow: inset 0 0 0 2px var(--encre); }
+.mois-case.choisi .mois-numero { color: var(--sauge-texte); font-weight: 700; }
+.mois-case.choisi.dehors { opacity: 1; }
 .mois-numero {
   font-size: .74rem; font-weight: 600;
   color: var(--texte);
@@ -1665,3 +1673,61 @@ button, input, select, textarea { font: inherit; color: inherit; }
   min-height: 0;
 }
 .choix-date input:focus { outline: none; }
+
+/* -------------------------------------------------------------------------
+   Dictée vocale
+   ------------------------------------------------------------------------- */
+
+.champ-dicte .champ-entete {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 6px;
+}
+.champ-dicte .champ-entete label { margin-bottom: 0; }
+
+.micro {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--contour-doux);
+  background: var(--blanc);
+  color: var(--texte-doux);
+  border-radius: var(--r-pilule);
+  padding: 5px 12px;
+  font-size: .76rem; font-weight: 600;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background .18s ease, color .18s ease, transform .14s var(--ressort);
+}
+.micro:hover { background: var(--conteneur); color: var(--encre); }
+.micro:active { transform: scale(.94); }
+
+/* À l'écoute : le bouton respire, pour qu'on n'oublie pas le micro ouvert. */
+.micro.ecoute {
+  background: var(--terre-pale);
+  color: var(--terre-texte);
+  border-color: transparent;
+  animation: respireMicro 1.8s ease-in-out infinite;
+}
+@keyframes respireMicro {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(186, 26, 26, .28); }
+  50% { box-shadow: 0 0 0 6px rgba(186, 26, 26, 0); }
+}
+
+.dictee-provisoire {
+  margin: 6px 2px 0;
+  font-size: .82rem; line-height: 1.45;
+  color: var(--texte-doux);
+  font-style: italic;
+}
+
+.dictee-avis {
+  margin-top: 10px;
+  background: var(--carte-basse);
+  border: 1px solid var(--contour-doux);
+  border-radius: var(--r-douce);
+  padding: 14px 15px;
+  animation: monte .3s var(--sortie) both;
+}
+.dictee-avis p {
+  margin: 0 0 10px;
+  font-size: .83rem; line-height: 1.55; color: var(--texte-doux);
+}
+.dictee-avis strong { color: var(--texte); font-weight: 600; }

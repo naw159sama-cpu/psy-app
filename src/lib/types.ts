@@ -126,6 +126,10 @@ export interface Reglages {
   heureRappelQuotidien: string
   /** L'avertissement sur les métadonnées n'est montré qu'une fois. */
   avertissementRappelsVu: boolean
+  /** Bouton « Dicter » dans les champs cliniques. */
+  dicteeActive: boolean
+  /** L'avertissement sur la transmission de la voix n'est montré qu'une fois. */
+  avertissementDicteeVu: boolean
 }
 
 export interface Donnees {

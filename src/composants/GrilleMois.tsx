@@ -15,7 +15,9 @@ interface Props {
   onMoisSuivant: () => void
 }
 
-const DUREE_APPUI_LONG = 500
+const DUREE_APPUI_LONG = 650
+/** Au-delà, le doigt glisse : ce n'est plus un appui long. */
+const TOLERANCE_APPUI = 10
 
 export default function GrilleMois({
   mois, selection, onSelectionner, onNouveauRdv, onMoisPrecedent, onMoisSuivant,
@@ -59,6 +61,16 @@ export default function GrilleMois({
   const onPointerDown = (e: React.PointerEvent) => {
     glissement.current = { x: e.clientX, y: e.clientY, actif: true }
   }
+  // Un doigt qui bouge annule l'appui long : sinon un simple balayage ouvrirait
+  // la prise de rendez-vous.
+  const onPointerMove = (e: React.PointerEvent) => {
+    const g = glissement.current
+    if (!g.actif) return
+    if (Math.abs(e.clientX - g.x) > TOLERANCE_APPUI || Math.abs(e.clientY - g.y) > TOLERANCE_APPUI) {
+      annulerAppui()
+    }
+  }
+
   const onPointerUp = (e: React.PointerEvent) => {
     const g = glissement.current
     if (!g.actif) return
@@ -83,6 +95,7 @@ export default function GrilleMois({
     <div
       className="mois-grille"
       onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={() => { glissement.current.actif = false; annulerAppui() }}
     >

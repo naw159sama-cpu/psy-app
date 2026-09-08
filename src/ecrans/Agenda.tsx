@@ -186,6 +186,24 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
           onMoisSuivant={() => setMois(ajouterMois(mois, 1))}
         />
 
+        <section>
+          <div className="entete-section">
+            <h3>{dateLongue(jourDuMois)}</h3>
+          </div>
+          {chome ? (
+            <div className="vide">
+              <span className="disque grand"><IconeAgenda taille={22} /></span>
+              <strong>Jour non travaillé</strong>
+              Touchez un autre jour de la grille.
+            </div>
+          ) : (
+            <ListeCreneaux
+              date={jourDuMois}
+              onOuvrirSeance={onOuvrirSeance}
+              onCreneauLibre={onCreneauLibre}
+            />
+          )}
+        </section>
         <section className="duo-cartes">
           <div className="carte-stat">
             <div className="stat-entete">
@@ -214,24 +232,6 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
           </div>
         </section>
 
-        <section>
-          <div className="entete-section">
-            <h3>{dateLongue(jourDuMois)}</h3>
-          </div>
-          {chome ? (
-            <div className="vide">
-              <span className="disque grand"><IconeAgenda taille={22} /></span>
-              <strong>Jour non travaillé</strong>
-              Touchez un autre jour de la grille.
-            </div>
-          ) : (
-            <ListeCreneaux
-              date={jourDuMois}
-              onOuvrirSeance={onOuvrirSeance}
-              onCreneauLibre={onCreneauLibre}
-            />
-          )}
-        </section>
       </>
     )
   }

@@ -3,6 +3,7 @@ import Feuille from './Feuille'
 import BriefSeance from './BriefSeance'
 import BoutonRappel from './BoutonRappel'
 import ClotureSeance from './ClotureSeance'
+import ChampDicte from './ChampDicte'
 import type { ModePaiement, Seance, StatutSeance } from '../lib/types'
 import { useDonnees, majSeance, supprimerSeance, deplacerSeance, patient } from '../lib/store'
 import { aujourdhui, dateLongue } from '../lib/dates'
@@ -108,13 +109,13 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
       </section>
 
       {annulee && (
-        <div className="champ" style={{ marginTop: 12 }}>
-          <label htmlFor="motif">Motif de l’annulation</label>
-          <input
+        <div style={{ marginTop: 12 }}>
+          <ChampDicte
             id="motif"
-            value={seance.motifAnnulation}
+            label="Motif de l’annulation"
+            valeur={seance.motifAnnulation}
+            onChange={(v) => majSeance(seanceId, { motifAnnulation: v })}
             placeholder="Ex. : malade, prévenue la veille"
-            onChange={(e) => majSeance(seanceId, { motifAnnulation: e.target.value })}
           />
         </div>
       )}

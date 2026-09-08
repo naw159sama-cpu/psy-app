@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { majSeance } from '../lib/store'
 import type { Seance } from '../lib/types'
+import ChampDicte from './ChampDicte'
 import { IconeCadenas, IconeChrono } from './Icones'
 
 interface Props {
@@ -77,51 +78,43 @@ export default function ClotureSeance({ seance }: Props) {
         ))}
       </div>
 
-      <div className="champ">
-        <label htmlFor="cl-etat">État observé</label>
-        <div className="suggestions">
-          {ETATS_FREQUENTS.map((m) => (
-            <button key={m} type="button" onClick={() => ajouterEtat(m)}>{m}</button>
-          ))}
-        </div>
-        <input
-          id="cl-etat"
-          value={etat}
-          placeholder="Comment elle est arrivée"
-          onChange={(e) => setEtat(e.target.value)}
-        />
+      <div className="suggestions">
+        {ETATS_FREQUENTS.map((m) => (
+          <button key={m} type="button" onClick={() => ajouterEtat(m)}>{m}</button>
+        ))}
       </div>
+      <ChampDicte
+        id="cl-etat"
+        label="État observé"
+        valeur={etat}
+        onChange={setEtat}
+        placeholder="Comment elle est arrivée"
+      />
 
-      <div className="champ">
-        <label htmlFor="cl-contenu">Contenu de la séance</label>
-        <textarea
-          id="cl-contenu"
-          rows={5}
-          value={contenu}
-          placeholder="Ce qui a été travaillé, ce qui est ressorti"
-          onChange={(e) => setContenu(e.target.value)}
-        />
-      </div>
+      <ChampDicte
+        id="cl-contenu"
+        label="Contenu de la séance"
+        valeur={contenu}
+        onChange={setContenu}
+        lignes={5}
+        placeholder="Ce qui a été travaillé, ce qui est ressorti"
+      />
 
-      <div className="champ">
-        <label htmlFor="cl-reprise">À reprendre la prochaine fois</label>
-        <textarea
-          id="cl-reprise"
-          rows={2}
-          value={reprise}
-          placeholder="La phrase que vous voudrez relire dans quinze jours"
-          onChange={(e) => setReprise(e.target.value)}
-        />
-        <p className="aide">
-          Ce champ s’affichera en tête de la prochaine séance, avant de la faire entrer.
-        </p>
-      </div>
+      <ChampDicte
+        id="cl-reprise"
+        label="À reprendre la prochaine fois"
+        valeur={reprise}
+        onChange={setReprise}
+        lignes={2}
+        placeholder="La phrase que vous voudrez relire dans quinze jours"
+        aide="Ce champ s’affichera en tête de la prochaine séance, avant de la faire entrer."
+      />
 
       <div className="note-contexte">
         <IconeCadenas taille={17} />
         <span>
           <strong>Note clinique confidentielle</strong>
-          Elle ne quitte jamais ce téléphone et n’apparaît sur aucun document.
+          Le texte ne quitte jamais ce téléphone et n’apparaît sur aucun document.
         </span>
       </div>
     </section>
