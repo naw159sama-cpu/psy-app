@@ -291,3 +291,39 @@ export function IconeCheckSimple({ taille = 14 }: Props) {
 export function IconeCroix({ taille = 16 }: Props) {
   return <svg {...base(taille)}><path d="M6.4 6.4 17.6 17.6M17.6 6.4 6.4 17.6" /></svg>
 }
+
+export function IconeFermer({ taille = 18 }: Props) {
+  return <svg {...base(taille)} strokeWidth={1.8}><path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4" /></svg>
+}
+
+/** Cible : les objectifs thérapeutiques. */
+export function IconeCible({ taille = 16 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <circle cx="12" cy="12" r="8.4" />
+      <circle cx="12" cy="12" r="4.4" />
+      <circle cx="12" cy="12" r="1" />
+    </svg>
+  )
+}
+
+/** Flèche revenant en arrière : la reprise du fil du suivi. */
+export function IconeReprise({ taille = 18 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <path d="M3.8 5.6v5h5" />
+      <path d="M4.6 14.2a8 8 0 1 0 .9-6" />
+      <path d="M12 8.4V12l2.6 1.6" />
+    </svg>
+  )
+}
+
+/** Grille : la vue mois de l'agenda. */
+export function IconeGrille({ taille = 18 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <rect x="3.6" y="4.6" width="16.8" height="15.8" rx="2.6" />
+      <path d="M3.6 9.4h16.8M9 9.4v11M15 9.4v11M3.6 15h16.8" />
+    </svg>
+  )
+}

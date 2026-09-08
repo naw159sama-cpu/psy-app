@@ -57,6 +57,24 @@ Les tests utilisent le lanceur intégré de Node (aucune dépendance). Toute mod
 - Les données de démonstration portent le nom « Démo » et ne doivent jamais ressembler
   à de vrais dossiers.
 
+## Règles ajoutées avec le brief et la clôture
+
+- La clôture de séance tient en trois champs : `etatObserve`, `note` (le contenu)
+  et `aReprendre`. Le troisième alimente le brief de la séance suivante : ne jamais
+  le vider ni le fusionner avec les deux autres.
+- `src/lib/suivi.ts` est une fonction pure : elle ne lit que ce qu'on lui passe.
+  Toute règle de brief ou d'alerte s'écrit là, avec son test.
+- Le brief ne montre jamais plus de trois signalements, et n'en tire aucun d'un
+  rythme inférieur à trois jours : en dessous, la médiane ne décrit rien.
+- Seules les séances `effectue` nourrissent le brief. Une séance annulée ne
+  transmet pas son compte rendu.
+- Les panneaux se ferment par `useGlissement` : glissement, bouton, fond, Échap.
+  Ne pas réintroduire d'écouteurs souris seuls, ni d'animation d'ouverture en
+  `fill-mode: both` — elle écraserait le déplacement du doigt.
+- La grille du mois commence le lundi (semaines ISO), alors que la semaine de
+  travail commence le samedi. Les deux règles coexistent : `debutGrille()` pour
+  le mois, `debutSemaine()` pour la semaine.
+
 ## Écueils connus
 
 - `localStorage` peut être vidé par le navigateur. La sauvegarde manuelle est le seul

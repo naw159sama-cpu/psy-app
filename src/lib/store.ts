@@ -1,9 +1,9 @@
 import { useSyncExternalStore } from 'react'
-import type { Donnees, Patient, Reglages, Seance } from './types'
+import type { Donnees, Objectif, Patient, Reglages, Seance } from './types'
 import { aujourdhui } from './dates'
 
 const CLE = 'psy-app:donnees'
-export const VERSION = 1
+export const VERSION = 2
 
 export const REGLAGES_DEFAUT: Reglages = {
   nomPraticienne: '',
@@ -25,17 +25,37 @@ function vide(): Donnees {
   return { version: VERSION, patients: [], seances: [], reglages: { ...REGLAGES_DEFAUT } }
 }
 
+/**
+ * Complète les dossiers enregistrés avant l'arrivée d'un champ.
+ * Aucune donnée existante n'est écrasée : on ne fait qu'ajouter ce qui manque.
+ */
+export function normaliserPatient(p: Patient): Patient {
+  return { ...p, objectifs: Array.isArray(p.objectifs) ? p.objectifs : [] }
+}
+
+export function normaliserSeance(s: Seance): Seance {
+  return {
+    ...s,
+    etatObserve: typeof s.etatObserve === 'string' ? s.etatObserve : '',
+    note: typeof s.note === 'string' ? s.note : '',
+    aReprendre: typeof s.aReprendre === 'string' ? s.aReprendre : '',
+  }
+}
+
+function normaliser(d: Partial<Donnees>): Donnees {
+  return {
+    version: VERSION,
+    patients: (d.patients ?? []).map(normaliserPatient),
+    seances: (d.seances ?? []).map(normaliserSeance),
+    reglages: { ...REGLAGES_DEFAUT, ...(d.reglages ?? {}) },
+  }
+}
+
 function charger(): Donnees {
   try {
     const brut = localStorage.getItem(CLE)
     if (!brut) return vide()
-    const d = JSON.parse(brut) as Donnees
-    return {
-      version: VERSION,
-      patients: d.patients ?? [],
-      seances: d.seances ?? [],
-      reglages: { ...REGLAGES_DEFAUT, ...(d.reglages ?? {}) },
-    }
+    return normaliser(JSON.parse(brut) as Donnees)
   } catch {
     return vide()
   }
@@ -74,7 +94,7 @@ export function id(): string {
 // --- Patients ---
 
 export function ajouterPatient(p: Omit<Patient, 'id' | 'creeLe'>): Patient {
-  const patient: Patient = { ...p, id: id(), creeLe: new Date().toISOString() }
+  const patient: Patient = normaliserPatient({ ...p, id: id(), creeLe: new Date().toISOString() })
   publier({ ...etat, patients: [...etat.patients, patient] })
   return patient
 }
@@ -99,6 +119,35 @@ export function patient(idPatient: string): Patient | undefined {
   return etat.patients.find((p) => p.id === idPatient)
 }
 
+// --- Objectifs thérapeutiques ---
+
+export function ajouterObjectif(idPatient: string, texte: string) {
+  const objectif: Objectif = {
+    id: id(),
+    texte: texte.trim(),
+    atteint: false,
+    creeLe: new Date().toISOString(),
+  }
+  if (!objectif.texte) return
+  const p = patient(idPatient)
+  if (!p) return
+  majPatient(idPatient, { objectifs: [...p.objectifs, objectif] })
+}
+
+export function basculerObjectif(idPatient: string, idObjectif: string) {
+  const p = patient(idPatient)
+  if (!p) return
+  majPatient(idPatient, {
+    objectifs: p.objectifs.map((o) => (o.id === idObjectif ? { ...o, atteint: !o.atteint } : o)),
+  })
+}
+
+export function supprimerObjectif(idPatient: string, idObjectif: string) {
+  const p = patient(idPatient)
+  if (!p) return
+  majPatient(idPatient, { objectifs: p.objectifs.filter((o) => o.id !== idObjectif) })
+}
+
 // --- Séances ---
 
 export function ajouterSeance(
@@ -118,7 +167,9 @@ export function ajouterSeance(
     paye: false,
     modePaiement: null,
     datePaiement: null,
+    etatObserve: '',
     note: '',
+    aReprendre: '',
     noteMajLe: null,
     motifAnnulation: '',
     creeLe: new Date().toISOString(),
@@ -174,12 +225,7 @@ export function importer(json: string): { ok: true } | { ok: false; erreur: stri
     if (!Array.isArray(d.patients) || !Array.isArray(d.seances)) {
       return { ok: false, erreur: "Ce fichier n'est pas une sauvegarde de l'application." }
     }
-    publier({
-      version: VERSION,
-      patients: d.patients,
-      seances: d.seances,
-      reglages: { ...REGLAGES_DEFAUT, ...(d.reglages ?? {}) },
-    })
+    publier(normaliser(d))
     return { ok: true }
   } catch {
     return { ok: false, erreur: 'Fichier illisible.' }

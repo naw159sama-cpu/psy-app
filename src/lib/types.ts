@@ -1,5 +1,13 @@
 export type StatutPatient = 'actif' | 'pause' | 'cloture'
 
+/** Un objectif thérapeutique suivi d'une séance à l'autre. */
+export interface Objectif {
+  id: string
+  texte: string
+  atteint: boolean
+  creeLe: string
+}
+
 export interface Patient {
   id: string
   prenom: string
@@ -10,6 +18,8 @@ export interface Patient {
   adressePar: string
   statut: StatutPatient
   anamnese: string
+  /** Objectifs de la prise en charge, affichés dans le brief d'avant-séance. */
+  objectifs: Objectif[]
   /** Tarif propre au patient (tarif adapté). Vide = tarif par défaut du cabinet. */
   tarifPerso: number | null
   creeLe: string
@@ -35,7 +45,12 @@ export interface Seance {
   paye: boolean
   modePaiement: ModePaiement | null
   datePaiement: string | null
+  /** Clôture de séance — « État observé » : comment la personne est arrivée. */
+  etatObserve: string
+  /** Clôture de séance — « Contenu » : ce qui a été travaillé. */
   note: string
+  /** Clôture de séance — « À reprendre » : nourrit le brief de la séance suivante. */
+  aReprendre: string
   noteMajLe: string | null
   motifAnnulation: string
   creeLe: string

@@ -47,6 +47,7 @@ export default function FeuilleChoixPatient({ date, creneau, onFermer, onSeanceC
       adressePar: '',
       statut: 'actif',
       anamnese: '',
+      objectifs: [],
       tarifPerso: null,
     })
     placer(p.id)

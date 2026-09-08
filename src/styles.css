@@ -1056,26 +1056,50 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: rgba(30, 27, 23, .45);
   backdrop-filter: blur(2px);
   display: flex; align-items: flex-end; justify-content: center;
-  animation: fondu .22s ease both;
+  animation: fondu .22s ease backwards;
 }
 .feuille {
   background: var(--fond);
   width: 100%; max-width: 440px;
   max-height: 92vh;
   overflow-y: auto;
+  /* Le geste de fermeture ne doit pas emporter la page qui est derrière. */
+  overscroll-behavior: contain;
+  /* Le navigateur garde le défilement vertical ; le reste nous revient. */
+  touch-action: pan-y;
   border-radius: 28px 28px 0 0;
-  padding: 8px 18px calc(26px + env(safe-area-inset-bottom));
+  padding: 0 18px calc(26px + env(safe-area-inset-bottom));
   box-shadow: var(--ombre-forte);
-  animation: monteFeuille .34s var(--sortie) both;
+  animation: monteFeuille .34s var(--sortie) backwards;
+  will-change: transform;
 }
+/* Zone d'empoigne : ici le navigateur ne prend pas le geste, c'est nous. */
+.poignee-zone {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0 -18px;
+  padding: 10px 18px 6px;
+  background: var(--fond);
+  touch-action: none;
+  cursor: grab;
+}
+.poignee-zone:active { cursor: grabbing; }
 .poignee {
   width: 40px; height: 4px;
   border-radius: 99px;
   background: var(--conteneur-max);
-  margin: 8px auto 16px;
+  margin: 0 auto;
+  transition: background .2s ease, width .2s var(--sortie);
+}
+.poignee-zone:active .poignee { background: var(--encre-pale); width: 52px; }
+.feuille-entete {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0 18px;
 }
 .feuille h2 { margin: 0 0 3px; font-size: 1.38rem; font-weight: 600; letter-spacing: -.02em; color: var(--encre); }
-.feuille > .sous { margin: 0 0 18px; font-size: .85rem; color: var(--texte-doux); }
+.feuille-entete .sous { margin: 0; font-size: .85rem; color: var(--texte-doux); }
 .feuille .contenu-feuille > * { animation: monte .34s var(--sortie) both; }
 .feuille .contenu-feuille > *:nth-child(1) { animation-delay: .04s; }
 .feuille .contenu-feuille > *:nth-child(2) { animation-delay: .08s; }
@@ -1156,3 +1180,251 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Dans une feuille, les titres de section restent secondaires */
 .feuille .entete-section { padding-bottom: 8px; }
 .feuille .entete-section h3 { font-size: 1.02rem; letter-spacing: -.008em; }
+
+/* -------------------------------------------------------------------------
+   Brief d'avant-séance — se lit en trente secondes
+   ------------------------------------------------------------------------- */
+
+.brief {
+  background: var(--carte-basse);
+  border: 1px solid var(--contour-doux);
+  border-radius: var(--r-carte);
+  padding: 16px 17px;
+  margin-bottom: 18px;
+}
+.brief-haut {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 12px;
+}
+.brief-titre {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--texte-doux);
+}
+.brief-compteur {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font-size: .78rem; font-weight: 600;
+  color: var(--encre);
+  white-space: nowrap;
+}
+.brief-compteur small { font-weight: 500; color: var(--texte-doux); }
+
+.brief-bloc + .brief-bloc {
+  margin-top: 13px; padding-top: 13px;
+  border-top: 1px solid var(--contour-doux);
+}
+.brief-etiquette {
+  display: block;
+  font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em;
+  color: var(--texte-doux);
+  margin-bottom: 4px;
+}
+.brief-texte { margin: 0; font-size: .89rem; line-height: 1.55; color: var(--texte); }
+.brief-texte.citation {
+  padding-left: 11px;
+  border-left: 2px solid var(--sauge-clair);
+  color: var(--texte-doux);
+}
+
+/* « À reprendre » : le seul élément du brief qui doit sauter aux yeux. */
+.brief-reprise {
+  background: var(--sauge-pale);
+  border-radius: 14px;
+  padding: 12px 14px;
+  border-top: 0 !important;
+}
+.brief-reprise .brief-etiquette { color: var(--sauge-texte); }
+.brief-reprise .brief-texte { color: var(--sauge-sombre); font-weight: 500; }
+
+.brief-alertes { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.brief-alerte {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: .8rem; font-weight: 500;
+}
+.brief-alerte.terre { background: var(--terre-pale); color: var(--terre-texte); }
+.brief-alerte.douce { background: var(--conteneur); color: var(--texte-doux); }
+.brief-alerte svg { flex: 0 0 auto; }
+
+.brief-objectifs { display: flex; flex-direction: column; gap: 7px; }
+.brief-objectif {
+  display: flex; align-items: flex-start; gap: 9px;
+  font-size: .87rem; color: var(--texte);
+  text-align: left;
+  background: none; border: 0; padding: 0;
+  cursor: pointer;
+}
+.brief-objectif .coche {
+  flex: 0 0 18px; width: 18px; height: 18px;
+  margin-top: 2px;
+  border-radius: 6px;
+  border: 1.5px solid var(--contour);
+  display: grid; place-items: center;
+  color: transparent;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+.brief-objectif.atteint .coche {
+  background: var(--sauge); border-color: var(--sauge); color: #fff;
+}
+.brief-objectif.atteint .texte-objectif {
+  color: var(--texte-doux); text-decoration: line-through;
+}
+
+.brief-vide {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .86rem; color: var(--texte-doux);
+}
+
+/* -------------------------------------------------------------------------
+   Clôture de séance — trois champs, quatre-vingt-dix secondes
+   ------------------------------------------------------------------------- */
+
+.cloture-entete {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+}
+.chrono {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 11px;
+  border-radius: var(--r-pilule);
+  background: var(--conteneur);
+  color: var(--texte-doux);
+  font-size: .72rem; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.chrono.dedans { background: var(--sauge-pale); color: var(--sauge-texte); }
+
+.etapes { display: flex; gap: 5px; margin: 12px 0 16px; }
+.etape {
+  flex: 1; height: 3px;
+  border-radius: 99px;
+  background: var(--conteneur-max);
+  overflow: hidden;
+}
+.etape span {
+  display: block; height: 100%;
+  background: var(--sauge);
+  transform-origin: left;
+  animation: glisseBarre .45s var(--sortie) both;
+}
+
+.suggestions { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+.suggestions button {
+  border: 1px solid var(--contour-doux);
+  background: var(--blanc);
+  color: var(--texte-doux);
+  border-radius: var(--r-pilule);
+  padding: 6px 13px;
+  font-size: .78rem; font-weight: 500;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, transform .14s var(--ressort);
+}
+.suggestions button:hover { background: var(--conteneur); color: var(--texte); }
+.suggestions button:active { transform: scale(.94); }
+
+/* -------------------------------------------------------------------------
+   Vue mois de l'agenda
+   ------------------------------------------------------------------------- */
+
+.mois-grille {
+  background: var(--blanc);
+  border: 1px solid var(--contour-doux);
+  border-radius: var(--r-carte);
+  box-shadow: var(--ombre-fine);
+  padding: 10px;
+  touch-action: pan-y;
+}
+.mois-entetes, .mois-lignes { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.mois-entetes { margin-bottom: 6px; }
+.mois-entetes span {
+  text-align: center;
+  font-size: .66rem; font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--texte-doux);
+  padding-bottom: 2px;
+}
+.mois-case {
+  position: relative;
+  display: flex; flex-direction: column;
+  gap: 2px;
+  min-height: 62px;
+  padding: 5px 4px 9px;
+  border: 0;
+  background: var(--carte-basse);
+  border-radius: 11px;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  animation: monte .3s var(--sortie) both;
+  transition: background .18s ease, transform .14s var(--ressort), box-shadow .18s ease;
+}
+.mois-case:hover { background: var(--conteneur); }
+.mois-case:active { transform: scale(.95); }
+.mois-case.dehors { background: transparent; opacity: .42; }
+.mois-case.chomee {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--carte-basse) 0 5px,
+    var(--conteneur) 5px 10px
+  );
+}
+.mois-case.dehors.chomee { background: transparent; }
+.mois-case.actuel { box-shadow: inset 0 0 0 1.5px var(--encre); }
+.mois-numero {
+  font-size: .74rem; font-weight: 600;
+  color: var(--texte);
+  padding-left: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.mois-case.actuel .mois-numero {
+  background: var(--encre); color: var(--fond);
+  border-radius: 99px;
+  width: 19px; height: 19px;
+  padding: 0;
+  display: grid; place-items: center;
+  font-size: .68rem;
+}
+.mois-rdv {
+  display: block;
+  font-size: .6rem; font-weight: 600;
+  line-height: 1.4;
+  padding: 1px 4px;
+  border-radius: 5px;
+  background: var(--sauge-pale);
+  color: var(--sauge-texte);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mois-rdv.manquee { background: var(--terre-pale); color: var(--terre-texte); }
+.mois-reste { font-size: .58rem; font-weight: 600; color: var(--texte-doux); padding-left: 4px; }
+.mois-densite {
+  position: absolute; left: 5px; right: 5px; bottom: 3px;
+  height: 2.5px; border-radius: 99px;
+  background: var(--conteneur-max);
+  overflow: hidden;
+}
+.mois-densite span {
+  display: block; height: 100%; border-radius: 99px;
+  background: var(--sauge);
+  transform-origin: left;
+  animation: glisseBarre .5s var(--sortie) both;
+}
+.mois-densite span.pleine { background: var(--encre); }
+
+.mois-legende {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  padding: 12px 4px 0;
+  font-size: .7rem; color: var(--texte-doux);
+}
+.mois-legende span { display: inline-flex; align-items: center; gap: 5px; }
+.mois-legende i {
+  width: 9px; height: 9px; border-radius: 3px;
+  background: var(--sauge-pale);
+  display: inline-block;
+}
+.mois-legende i.manquee { background: var(--terre-pale); }
+.mois-legende i.chomee {
+  background: repeating-linear-gradient(-45deg, var(--carte-basse) 0 3px, var(--conteneur) 3px 6px);
+}

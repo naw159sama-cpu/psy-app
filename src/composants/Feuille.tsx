@@ -1,4 +1,6 @@
-import { useEffect, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import { useGlissement } from './useGlissement'
+import { IconeFermer } from './Icones'
 
 interface Props {
   titre: string
@@ -7,31 +9,41 @@ interface Props {
   children: ReactNode
 }
 
-/** Panneau qui monte depuis le bas, comme sur mobile. */
+/**
+ * Panneau qui monte depuis le bas. Se ferme de quatre façons : glissement vers
+ * le bas, bouton de fermeture, appui sur le fond, touche Échap.
+ */
 export default function Feuille({ titre, sous, onFermer, children }: Props) {
-  useEffect(() => {
-    const echap = (e: KeyboardEvent) => { if (e.key === 'Escape') onFermer() }
-    document.addEventListener('keydown', echap)
-    const avant = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', echap)
-      document.body.style.overflow = avant
-    }
-  }, [onFermer])
+  const { refFeuille, refVoile, fermer, handlers } = useGlissement(onFermer)
 
   return (
-    <div className="voile" onClick={onFermer} role="presentation">
+    <div
+      className="voile"
+      ref={refVoile}
+      onClick={fermer}
+      role="presentation"
+    >
       <div
         className="feuille"
+        ref={refFeuille}
         role="dialog"
         aria-modal="true"
         aria-label={titre}
         onClick={(e) => e.stopPropagation()}
+        {...handlers}
       >
-        <div className="poignee" />
-        <h2>{titre}</h2>
-        {sous && <p className="sous">{sous}</p>}
+        <div className="poignee-zone" data-poignee>
+          <div className="poignee" />
+        </div>
+        <div className="feuille-entete">
+          <div style={{ minWidth: 0 }}>
+            <h2>{titre}</h2>
+            {sous && <p className="sous">{sous}</p>}
+          </div>
+          <button className="bouton-rond" aria-label="Fermer" onClick={fermer}>
+            <IconeFermer />
+          </button>
+        </div>
         <div className="contenu-feuille">{children}</div>
       </div>
     </div>

@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import Feuille from './Feuille'
+import BriefSeance from './BriefSeance'
+import ClotureSeance from './ClotureSeance'
 import type { ModePaiement, Seance, StatutSeance } from '../lib/types'
 import { useDonnees, majSeance, supprimerSeance, deplacerSeance, patient } from '../lib/store'
 import { aujourdhui, dateLongue } from '../lib/dates'
@@ -9,7 +11,7 @@ import {
   AIDE_STATUT, LIBELLE_PAIEMENT, LIBELLE_STATUT, MODES_PAIEMENT, nomAffiche,
 } from '../lib/affichage'
 import {
-  Chevron, IconeCabinet, IconeCadenas, IconeCheck, IconePortefeuille, IconeRecu,
+  Chevron, IconeCabinet, IconeCheck, IconePortefeuille, IconeRecu,
 } from './Icones'
 
 const STATUTS: StatutSeance[] = ['prevu', 'effectue', 'absent', 'annule_delai', 'annule_hors_delai']
@@ -23,21 +25,9 @@ interface Props {
 export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: Props) {
   const { seances, reglages } = useDonnees()
   const seance = seances.find((s) => s.id === seanceId)
-  const [note, setNote] = useState(seance?.note ?? '')
   const [confirmeSuppr, setConfirmeSuppr] = useState(false)
   const [erreurDeplacement, setErreurDeplacement] = useState('')
   const [vientDePayer, setVientDePayer] = useState(false)
-  const premierRendu = useRef(true)
-
-  // Enregistrement automatique du brouillon de note, un peu après la frappe.
-  useEffect(() => {
-    if (premierRendu.current) { premierRendu.current = false; return }
-    const t = setTimeout(() => {
-      majSeance(seanceId, { note, noteMajLe: new Date().toISOString() })
-    }, 500)
-    return () => clearTimeout(t)
-  }, [note, seanceId])
-
   if (!seance) return null
 
   const p = patient(seance.patientId)
@@ -87,6 +77,8 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
       sous={`${dateLongue(seance.date)} · ${creneau?.debut ?? ''} – ${creneau?.fin ?? ''}`}
       onFermer={onFermer}
     >
+      <BriefSeance seance={seance} />
+
       {p && (
         <button className="carte-ligne" style={{ marginBottom: 18 }} onClick={() => onOuvrirPatient(p.id)}>
           <span className="monogramme">{initiales(p.prenom, p.nom)}</span>
@@ -124,25 +116,7 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
         </div>
       )}
 
-      <section style={{ marginTop: 20 }}>
-        <div className="entete-section"><h3>Note de séance</h3></div>
-        <div className="champ">
-          <textarea
-            rows={7}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Ce qui a été abordé, ce qui est ressorti, ce à quoi penser la prochaine fois…"
-          />
-          <p className="aide">Enregistrée toute seule pendant que vous écrivez.</p>
-        </div>
-        <div className="note-contexte">
-          <IconeCadenas taille={17} />
-          <span>
-            <strong>Note clinique confidentielle</strong>
-            Elle ne quitte jamais ce téléphone et n’apparaît sur aucun document.
-          </span>
-        </div>
-      </section>
+      <ClotureSeance seance={seance} />
 
       <section style={{ marginTop: 20 }}>
         <div className="entete-section"><h3>Argent</h3></div>
