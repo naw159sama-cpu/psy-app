@@ -1822,3 +1822,108 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .rdv-libre:hover { background: var(--carte-basse); border-color: var(--texte-doux); }
 .rdv-libre .rdv-heure { color: var(--texte-doux); }
+
+/* -------------------------------------------------------------------------
+   Vue semaine — une carte par journée, ouvrable comme dans la grille du mois
+   ------------------------------------------------------------------------- */
+
+.pile-semaine { display: flex; flex-direction: column; gap: 10px; }
+
+.jour-semaine {
+  display: block;
+  width: 100%; text-align: left;
+  background: var(--blanc);
+  border: 1px solid var(--contour-doux);
+  border-radius: var(--r-carte);
+  box-shadow: var(--ombre-fine);
+  padding: 13px 15px 11px;
+  cursor: pointer;
+  animation: monte .4s var(--sortie) both;
+  transition: box-shadow .22s ease, transform .18s var(--sortie), border-color .22s ease;
+}
+.jour-semaine:hover { box-shadow: var(--ombre-carte); transform: translateY(-2px); }
+.jour-semaine:active { transform: scale(.99); }
+.pile-semaine > *:nth-child(1) { animation-delay: .03s; }
+.pile-semaine > *:nth-child(2) { animation-delay: .07s; }
+.pile-semaine > *:nth-child(3) { animation-delay: .11s; }
+.pile-semaine > *:nth-child(n+4) { animation-delay: .15s; }
+
+/* Le jour même se distingue sans crier. */
+.jour-semaine.actuel { border-color: var(--encre); }
+
+.js-entete {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; margin-bottom: 9px;
+}
+.js-jour {
+  font-size: 1rem; font-weight: 600; letter-spacing: -.015em;
+  color: var(--encre);
+  text-transform: capitalize;
+}
+.js-jour small {
+  margin-left: 7px;
+  font-size: .78rem; font-weight: 500; color: var(--texte-doux);
+  text-transform: none;
+}
+.js-droite { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.js-compte {
+  font-size: .78rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--texte-doux);
+}
+
+.js-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.js-rdv {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 5px 9px;
+  border-radius: 9px;
+  background: var(--carte-basse);
+  font-size: .82rem;
+  min-width: 0;
+}
+.js-rdv.manquee { background: var(--terre-pale); }
+.js-heure {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700; color: var(--encre);
+}
+.js-rdv.manquee .js-heure { color: var(--terre-texte); }
+.js-nom {
+  flex: 0 0 auto;
+  font-weight: 600; color: var(--texte);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 42%;
+}
+.js-motif {
+  flex: 1; min-width: 0;
+  color: var(--texte-doux);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.js-vide {
+  margin: 0;
+  padding: 8px 2px;
+  font-size: .84rem; color: var(--texte-doux);
+}
+
+.js-pied {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 10px;
+}
+.js-densite {
+  flex: 1;
+  height: 3px; border-radius: 99px;
+  background: var(--conteneur-max);
+  overflow: hidden;
+}
+.js-densite span {
+  display: block; height: 100%; border-radius: 99px;
+  background: var(--sauge);
+  transform-origin: left;
+  animation: glisseBarre .55s var(--sortie) both;
+}
+.js-densite span.pleine { background: var(--encre); }
+.js-libres {
+  flex: 0 0 auto;
+  font-size: .72rem; font-weight: 600; color: var(--texte-doux);
+}

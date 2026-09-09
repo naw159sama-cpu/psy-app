@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import ListeCreneaux from '../composants/ListeCreneaux'
 import GrilleMois from '../composants/GrilleMois'
+import CarteJourSemaine from '../composants/CarteJourSemaine'
 import { useCompteur } from '../composants/Compteur'
 import { useDonnees } from '../lib/store'
 import {
@@ -278,16 +279,16 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre, onOuvrirJour }:
         </div>
       </section>
 
-      {joursSemaine.map((d) => (
-        <section key={d}>
-          <div className="jour-titre">
-            {JOURS[jourDeIso(d)]}
-            <small>{dateDeIso(d).getDate()} {MOIS[dateDeIso(d).getMonth()]}</small>
-            {d === today && <span className="pastille-date">aujourd’hui</span>}
-          </div>
-          <ListeCreneaux date={d} onOuvrirSeance={onOuvrirSeance} onCreneauLibre={onCreneauLibre} />
-        </section>
-      ))}
+      <div className="pile-semaine">
+        {joursSemaine.map((d) => (
+          <CarteJourSemaine
+            key={d}
+            date={d}
+            estAujourdhui={d === today}
+            onOuvrir={(date) => { setJour(date); onOuvrirJour(date) }}
+          />
+        ))}
+      </div>
 
       {joursSemaine.length === 0 && (
         <div className="vide">
