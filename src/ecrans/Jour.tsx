@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
-import ListeCreneaux from '../composants/ListeCreneaux'
+import CarteJourSemaine from '../composants/CarteJourSemaine'
 import { useDonnees, majSeance } from '../lib/store'
 import {
-  aujourdhui, ajouterJours, dateBreve, dateJourMois, dateLongue, jourDeIso, JOURS,
+  aujourdhui, ajouterJours, dateBreve, dateDeIso, dateLongue, debutSemaine, jourDeIso,
+  JOURS, MOIS,
 } from '../lib/dates'
 import { estDue } from '../lib/argent'
 import { nomAffiche } from '../lib/affichage'
@@ -13,8 +14,8 @@ import {
 
 interface Props {
   onOuvrirSeance: (seanceId: string) => void
-  onCreneauLibre: (date: string, creneau: number) => void
   onVoirAgenda: () => void
+  onOuvrirJour: (date: string) => void
   onVoirRappels: () => void
   /** Rappels du prochain jour de consultation encore à envoyer. */
   rappelsRestants: number
@@ -34,6 +35,14 @@ function prochainJourTravaille(jours: number[]): string {
   return aujourdhui()
 }
 
+/** « 5 – 11 septembre », comme dans l'agenda. */
+function libelleSemaine(debut: string): string {
+  const d1 = dateDeIso(debut)
+  const d2 = dateDeIso(ajouterJours(debut, 6))
+  if (d1.getMonth() === d2.getMonth()) return `${d1.getDate()} – ${d2.getDate()} ${MOIS[d2.getMonth()]}`
+  return `${d1.getDate()} ${MOIS[d1.getMonth()].slice(0, 4)}. – ${d2.getDate()} ${MOIS[d2.getMonth()].slice(0, 4)}.`
+}
+
 /** Une phrase qui décrit la journée, sans jargon. */
 function resume(nbSeances: number, nbNotes: number, estAujourdhui: boolean): string {
   const quand = estAujourdhui ? 'Une journée' : 'Votre prochaine journée'
@@ -48,7 +57,7 @@ function resume(nbSeances: number, nbNotes: number, estAujourdhui: boolean): str
 }
 
 export default function Jour({
-  onOuvrirSeance, onCreneauLibre, onVoirAgenda, onVoirRappels,
+  onOuvrirSeance, onVoirAgenda, onOuvrirJour, onVoirRappels,
   rappelsRestants, rappelsUrgents, jourARappeler, onSouffle,
 }: Props) {
   const { seances, patients, reglages } = useDonnees()
@@ -58,6 +67,10 @@ export default function Jour({
     [reglages.joursTravail],
   )
   const estAujourdhui = date === today
+
+  const semaine = debutSemaine(today)
+  const joursSemaine = Array.from({ length: 7 }, (_, i) => ajouterJours(semaine, i))
+    .filter((d) => reglages.joursTravail.includes(jourDeIso(d)))
 
   const duJour = seances.filter((s) => s.date === date)
   const notesEnRetard = seances
@@ -93,7 +106,8 @@ export default function Jour({
 
   const traiter = (t: (typeof taches)[number]) => {
     if (t.action === 'encaisser') {
-      majSeance(t.id, { paye: true, modePaiement: 'especes', datePaiement: today })
+      const moyen = reglages.modesPaiement.find((m) => m.actif)?.id ?? 'especes'
+      majSeance(t.id, { paye: true, modePaiement: moyen, datePaiement: today })
     } else {
       onOuvrirSeance(t.id)
     }
@@ -181,15 +195,31 @@ export default function Jour({
       <section>
         <div className="entete-section">
           <h3>
-            {estAujourdhui ? "Aujourd'hui" : 'Prochaine journée'}
-            <span className="pastille-date">{dateJourMois(date)}</span>
+            Ma semaine
+            <span className="pastille-date">{libelleSemaine(semaine)}</span>
           </h3>
           <button className="lien-section" onClick={onVoirAgenda}>
             Vue agenda
             <Chevron taille={15} />
           </button>
         </div>
-        <ListeCreneaux date={date} onOuvrirSeance={onOuvrirSeance} onCreneauLibre={onCreneauLibre} />
+        <div className="pile-semaine">
+          {joursSemaine.map((d) => (
+            <CarteJourSemaine
+              key={d}
+              date={d}
+              estAujourdhui={d === today}
+              onOuvrir={onOuvrirJour}
+            />
+          ))}
+        </div>
+        {joursSemaine.length === 0 && (
+          <div className="vide">
+            <span className="disque grand"><IconeAgenda taille={22} /></span>
+            <strong>Aucun jour de travail configuré</strong>
+            Choisissez vos jours dans les réglages.
+          </div>
+        )}
       </section>
 
       {taches.length > 0 && (

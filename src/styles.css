@@ -2124,3 +2124,56 @@ button, input, select, textarea { font: inherit; color: inherit; }
   box-shadow: 0 0 0 4px rgba(86, 99, 58, .12);
 }
 .ajout-moyen .btn { flex: 0 0 auto; }
+
+/* -------------------------------------------------------------------------
+   Bloc d'encaissement — le même geste partout
+   ------------------------------------------------------------------------- */
+
+.encaissement { margin: 12px 0; }
+.encaissement.valide { animation: pulseDouce .5s var(--ressort); }
+.encaissement .aide { margin: 8px 2px 0; }
+
+.encaisse-resume {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; text-align: left;
+  background: var(--sauge-pale);
+  border: 0;
+  border-radius: var(--r-douce);
+  padding: 11px 13px;
+  cursor: pointer;
+  transition: background .18s ease;
+}
+.encaisse-resume:hover { background: #d7e6cb; }
+.encaisse-resume .disque { background: rgba(86, 99, 58, .18); color: var(--sauge-texte); }
+.encaisse-textes { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.encaisse-titre {
+  font-size: .9rem; font-weight: 600; color: var(--sauge-texte);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.encaisse-sous { font-size: .77rem; color: var(--sauge-fonce); margin-top: 1px; }
+.encaisse-crayon { color: var(--sauge-fonce); flex: 0 0 auto; }
+
+.encaisse-detail {
+  margin-top: 10px;
+  padding: 12px 13px;
+  background: var(--carte-basse);
+  border-radius: var(--r-douce);
+  animation: monte .28s var(--sortie) both;
+}
+.encaisse-detail.ouvert { background: var(--ambre-pale); }
+.encaisse-detail.ouvert .choix button {
+  background: var(--blanc);
+  border-color: rgba(122, 91, 24, .25);
+  color: var(--ambre-fonce);
+}
+.encaisse-detail.ouvert .choix button:hover {
+  background: var(--ambre-pale);
+  border-color: var(--ambre-texte);
+}
+.encaisse-detail.ouvert label { color: var(--ambre-texte); }
+.encaisse-question {
+  display: block;
+  margin-bottom: 9px;
+  font-size: .84rem; font-weight: 600;
+  color: var(--ambre-fonce);
+}

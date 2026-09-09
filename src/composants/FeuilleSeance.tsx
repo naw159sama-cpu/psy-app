@@ -2,18 +2,19 @@ import { useState } from 'react'
 import Feuille from './Feuille'
 import BriefSeance from './BriefSeance'
 import BoutonRappel from './BoutonRappel'
+import BlocEncaissement from './BlocEncaissement'
 import ClotureSeance from './ClotureSeance'
 import ChampDicte from './ChampDicte'
 import type { Seance, StatutSeance } from '../lib/types'
 import { useDonnees, majSeance, supprimerSeance, deplacerSeance, patient } from '../lib/store'
-import { aujourdhui, dateLongue } from '../lib/dates'
+import { dateLongue } from '../lib/dates'
 import { da, initiales } from '../lib/format'
 import { estDue, partPsy, partCabinet } from '../lib/argent'
 import {
   AIDE_STATUT, LIBELLE_STATUT, nomAffiche,
 } from '../lib/affichage'
 import {
-  Chevron, IconeCabinet, IconeCheck, IconePortefeuille, IconeRecu,
+  Chevron, IconeCabinet, IconePortefeuille, IconeRecu,
 } from './Icones'
 
 const STATUTS: StatutSeance[] = ['prevu', 'effectue', 'absent', 'annule_delai', 'annule_hors_delai']
@@ -29,7 +30,6 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
   const seance = seances.find((s) => s.id === seanceId)
   const [confirmeSuppr, setConfirmeSuppr] = useState(false)
   const [erreurDeplacement, setErreurDeplacement] = useState('')
-  const [vientDePayer, setVientDePayer] = useState(false)
   if (!seance) return null
 
   const p = patient(seance.patientId)
@@ -42,20 +42,6 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
     // Une séance qui n'est plus due ne peut pas rester marquée payée.
     if (!estDue(statut)) { champs.paye = false; champs.modePaiement = null; champs.datePaiement = null }
     majSeance(seanceId, champs)
-  }
-
-  const basculerPaiement = () => {
-    if (seance.paye) {
-      majSeance(seanceId, { paye: false, modePaiement: null, datePaiement: null })
-    } else {
-      majSeance(seanceId, {
-        paye: true,
-        modePaiement: seance.modePaiement ?? 'especes',
-        datePaiement: aujourdhui(),
-      })
-      setVientDePayer(true)
-      setTimeout(() => setVientDePayer(false), 600)
-    }
   }
 
   const changerCreneau = (index: number) => {
@@ -148,50 +134,8 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
           </div>
         </div>
 
-        {due ? (
-          <>
-            <button
-              className={`btn ${seance.paye ? '' : 'principal'} bloc${vientDePayer ? ' valide' : ''}`}
-              style={{ marginTop: 12 }}
-              onClick={basculerPaiement}
-            >
-              {!seance.paye && <IconeCheck taille={16} />}
-              {seance.paye ? 'Annuler l’encaissement' : 'Marquer comme payée'}
-            </button>
-            {seance.paye && (
-              <>
-                <div className="entete-section" style={{ marginTop: 18 }}><h3>Réglé par</h3></div>
-                <div className="choix">
-                  {reglages.modesPaiement.filter((m) => m.actif).map((m) => (
-                    <button
-                      key={m.id}
-                      aria-pressed={seance.modePaiement === m.id}
-                      onClick={() => majSeance(seanceId, { modePaiement: m.id })}
-                    >
-                      {m.nom}
-                    </button>
-                  ))}
-                </div>
+        <BlocEncaissement seance={seance} />
 
-                <div className="champ" style={{ marginTop: 16 }}>
-                  <label htmlFor="date-paiement">Date de l’encaissement</label>
-                  <input
-                    id="date-paiement"
-                    type="date"
-                    value={seance.datePaiement ?? ''}
-                    onChange={(e) => majSeance(seanceId, { datePaiement: e.target.value || null })}
-                  />
-                  <p className="aide">
-                    À corriger si le règlement est arrivé après la séance : c’est cette
-                    date qui compte dans les encaissements du mois.
-                  </p>
-                </div>
-              </>
-            )}
-          </>
-        ) : (
-          <p className="aide">Rien à encaisser pour cette séance.</p>
-        )}
       </section>
 
       <section style={{ marginTop: 20 }}>

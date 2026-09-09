@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import Feuille from './Feuille'
 import ChampDicte from './ChampDicte'
+import BlocEncaissement from './BlocEncaissement'
 import { journaliserRappel, majSeance, marquerRappelEnvoye, useDonnees } from '../lib/store'
 import { eligibilite, lienWhatsApp, messagePour } from '../lib/rappels'
+import { estDue } from '../lib/argent'
 import { dateLongue } from '../lib/dates'
 import { initiales } from '../lib/format'
 import { LIBELLE_STATUT, couleurStatut, nomAffiche } from '../lib/affichage'
@@ -74,6 +76,11 @@ function LigneRdv({ seance, patient, ouverte, onBasculer, onOuvrirSeance }: Lign
             </span>
           )}
           {dejaEnvoye && <span className="puce ok">Confirmé</span>}
+          {estDue(seance.statut) && (
+            <span className={`puce ${seance.paye ? 'ok' : 'attente'}`}>
+              {seance.paye ? 'Payé' : 'À encaisser'}
+            </span>
+          )}
           <span className={`rdv-chevron${ouverte ? ' ouvert' : ''}`}><IconeBas taille={15} /></span>
         </span>
       </button>
@@ -89,6 +96,8 @@ function LigneRdv({ seance, patient, ouverte, onBasculer, onOuvrirSeance }: Lign
             placeholder="Apporte ses résultats, vient accompagnée…"
             aide="Note pratique, visible dans l’agenda. Rien de clinique."
           />
+
+          <BlocEncaissement seance={seance} compact />
 
           <div className="rdv-actions">
             {e.eligible && message ? (

@@ -222,7 +222,7 @@ export default function App() {
         ) : onglet === 'accueil' ? (
           <Jour
             onOuvrirSeance={ouvrirSeance}
-            onCreneauLibre={creneauLibre}
+            onOuvrirJour={(date) => setPanneau({ type: 'jour', date })}
             onVoirAgenda={() => allerOnglet('agenda')}
             onVoirRappels={() => setVue({ type: 'rappels' })}
             rappelsRestants={rappelsRestants}

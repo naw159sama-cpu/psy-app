@@ -50,7 +50,8 @@ export default function Argent({ onOuvrirSeance }: Props) {
 
   const encaisser = (id: string) => {
     setEncaisseA(id)
-    majSeance(id, { paye: true, modePaiement: 'especes', datePaiement: aujourdhui() })
+    const moyen = reglages.modesPaiement.find((m) => m.actif)?.id ?? 'especes'
+    majSeance(id, { paye: true, modePaiement: moyen, datePaiement: aujourdhui() })
     setTimeout(() => setEncaisseA(null), 600)
   }
 
