@@ -50,7 +50,18 @@ export type StatutSeance =
   | 'annule_hors_delai' // annulée trop tard -> facturée
   | 'absent'            // ne s'est pas présentée -> facturée
 
-export type ModePaiement = 'especes' | 'cheque' | 'virement' | 'cb'
+/**
+ * Identifiant d'un moyen de paiement. Ce n'est plus une liste figée : chaque
+ * cabinet a ses comptes — CCP, telle banque, telle autre — et les nomme
+ * lui-même dans les réglages.
+ */
+export type ModePaiement = string
+
+export interface MoyenPaiement {
+  id: string
+  nom: string
+  actif: boolean
+}
 
 export interface Seance {
   id: string
@@ -132,6 +143,8 @@ export interface Reglages {
   heureRappelQuotidien: string
   /** L'avertissement sur les métadonnées n'est montré qu'une fois. */
   avertissementRappelsVu: boolean
+  /** Moyens de paiement proposés à l'encaissement. */
+  modesPaiement: MoyenPaiement[]
   /** Bouton « Dicter » dans les champs cliniques. */
   dicteeActive: boolean
   /** L'avertissement sur la transmission de la voix n'est montré qu'une fois. */

@@ -4,6 +4,7 @@ import {
 } from '../lib/store'
 import { genererDemo } from '../lib/demo'
 import ReglagesRappels from '../composants/ReglagesRappels'
+import ReglagesPaiement from '../composants/ReglagesPaiement'
 import { aujourdhui, JOURS_COURTS } from '../lib/dates'
 import { da, pourcent } from '../lib/format'
 import { IconeCabinet, IconeCadenas, IconePortefeuille, IconeRecu } from '../composants/Icones'
@@ -140,6 +141,8 @@ export default function Reglages() {
           où elles ont été créées.
         </p>
       </section>
+
+      <ReglagesPaiement />
 
       <section>
         <div className="entete-section"><h3>Jours de travail</h3></div>

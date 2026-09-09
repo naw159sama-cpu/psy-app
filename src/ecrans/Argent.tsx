@@ -3,13 +3,22 @@ import Stats from './Stats'
 import { useDonnees, majSeance } from '../lib/store'
 import { aujourdhui, ajouterMois, moisCourant, moisLibelle, dateBreve } from '../lib/dates'
 import { da, initiales, montantSeul, pourcent } from '../lib/format'
-import { bilan, estDue } from '../lib/argent'
-import { LIBELLE_STATUT, nomAffiche } from '../lib/affichage'
+import { bilan, encaissementsParMoyen, estDue, totalEncaisse } from '../lib/argent'
+import { LIBELLE_STATUT, nomAffiche, nomMoyenPaiement } from '../lib/affichage'
 import { useCompteur } from '../composants/Compteur'
 import {
   FlecheDroite, FlecheGauche, IconeAbsence, IconeAttente, IconeBas, IconeCabinet,
   IconeCheck, IconeCheckSimple, IconePortefeuille, IconeRecu, IconeVerifie,
 } from '../composants/Icones'
+
+/** Chaque moyen garde sa teinte d'un mois à l'autre. */
+const MOYEN_TEINTE: Record<string, string> = {
+  especes: 'sauge',
+  ccp: 'ambre',
+  virement: 'bleu',
+  cheque: 'rose',
+  cb: 'peche',
+}
 
 interface Props {
   onOuvrirSeance: (seanceId: string) => void
@@ -26,6 +35,10 @@ export default function Argent({ onOuvrirSeance }: Props) {
   const b = bilan(duMois)
   const partAnimee = useCompteur(b.partPsy)
   const partEncaissee = b.total > 0 ? Math.round((b.encaisse / b.total) * 100) : 0
+
+  // Ce qui est réellement entré ce mois-ci, quelle que soit la date des séances.
+  const encaissements = encaissementsParMoyen(seances, mois)
+  const entre = totalEncaisse(encaissements)
 
   // Tous les impayés, pas seulement ceux du mois affiché : c'est ce qu'elle doit relancer.
   const impayes = seances
@@ -161,6 +174,46 @@ export default function Argent({ onOuvrirSeance }: Props) {
             <span className="etiquette">{reglages.partPsyPct} / {100 - reglages.partPsyPct}</span>
           </div>
         </div>
+      </section>
+
+      <section>
+        <div className="entete-section">
+          <h3>Comment on m’a payée</h3>
+          {entre > 0 && <span className="entete-note">Total : <strong>{da(entre)}</strong></span>}
+        </div>
+        {encaissements.length === 0 ? (
+          <div className="vide">
+            <span className="disque grand"><IconePortefeuille /></span>
+            <strong>Aucun règlement ce mois-ci</strong>
+            Les encaissements apparaîtront ici, classés par moyen de paiement.
+          </div>
+        ) : (
+          <>
+            <div className="carte">
+              {encaissements.map((l) => (
+                <div className="rang" key={l.moyen || 'sans'}>
+                  <span className="rang-lib">
+                    <span className={`disque ${MOYEN_TEINTE[l.moyen] ?? 'bleu'}`}>
+                      <IconePortefeuille />
+                    </span>
+                    <span className="exclusion-textes">
+                      <span className="exclusion-nom">{nomMoyenPaiement(l.moyen || null, reglages)}</span>
+                      <span className="exclusion-motif">
+                        {l.nbPatients} personne{l.nbPatients > 1 ? 's' : ''}
+                        {l.nbSeances !== l.nbPatients && ` · ${l.nbSeances} séances`}
+                      </span>
+                    </span>
+                  </span>
+                  <span className="rang-val fort">{da(l.montant)}</span>
+                </div>
+              ))}
+            </div>
+            <p className="aide">
+              Compté à la date du règlement, pas à celle de la séance : un virement
+              arrivé en retard compte dans le mois où il est entré.
+            </p>
+          </>
+        )}
       </section>
 
       <section>

@@ -1,10 +1,25 @@
 import { useSyncExternalStore } from 'react'
-import type { Donnees, JournalRappel, Objectif, Patient, Reglages, Seance } from './types'
+import type {
+  Donnees, JournalRappel, MoyenPaiement, Objectif, Patient, Reglages, Seance,
+} from './types'
 import { MODELES_DEFAUT } from './rappels'
 import { aujourdhui } from './dates'
 
 const CLE = 'psy-app:donnees'
-export const VERSION = 4
+export const VERSION = 5
+
+/**
+ * Les moyens d'encaissement d'usage courant. Les identifiants des quatre
+ * premiers reprennent ceux d'avant, pour que les séances déjà réglées
+ * gardent leur moyen de paiement.
+ */
+export const MOYENS_PAIEMENT_DEFAUT: MoyenPaiement[] = [
+  { id: 'especes', nom: 'Espèces, en séance', actif: true },
+  { id: 'ccp', nom: 'CCP', actif: true },
+  { id: 'virement', nom: 'Virement bancaire', actif: true },
+  { id: 'cheque', nom: 'Chèque', actif: true },
+  { id: 'cb', nom: 'Carte', actif: false },
+]
 
 export const REGLAGES_DEFAUT: Reglages = {
   nomPraticienne: '',
@@ -27,6 +42,7 @@ export const REGLAGES_DEFAUT: Reglages = {
   modelesRappel: MODELES_DEFAUT,
   heureRappelQuotidien: '18:00',
   avertissementRappelsVu: false,
+  modesPaiement: MOYENS_PAIEMENT_DEFAUT,
   dicteeActive: true,
   avertissementDicteeVu: false,
 }
@@ -78,6 +94,8 @@ function normaliser(d: Partial<Donnees>): Donnees {
       ...(d.reglages ?? {}),
       // Un fichier plus ancien n'a aucun modèle : lui rendre ceux d'origine.
       modelesRappel: (d.reglages?.modelesRappel?.length ? d.reglages.modelesRappel : MODELES_DEFAUT),
+      modesPaiement: (d.reglages?.modesPaiement?.length
+        ? d.reglages.modesPaiement : MOYENS_PAIEMENT_DEFAUT),
     },
   }
 }

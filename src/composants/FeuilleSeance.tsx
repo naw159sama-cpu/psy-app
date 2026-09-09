@@ -4,13 +4,13 @@ import BriefSeance from './BriefSeance'
 import BoutonRappel from './BoutonRappel'
 import ClotureSeance from './ClotureSeance'
 import ChampDicte from './ChampDicte'
-import type { ModePaiement, Seance, StatutSeance } from '../lib/types'
+import type { Seance, StatutSeance } from '../lib/types'
 import { useDonnees, majSeance, supprimerSeance, deplacerSeance, patient } from '../lib/store'
 import { aujourdhui, dateLongue } from '../lib/dates'
 import { da, initiales } from '../lib/format'
 import { estDue, partPsy, partCabinet } from '../lib/argent'
 import {
-  AIDE_STATUT, LIBELLE_PAIEMENT, LIBELLE_STATUT, MODES_PAIEMENT, nomAffiche,
+  AIDE_STATUT, LIBELLE_STATUT, nomAffiche,
 } from '../lib/affichage'
 import {
   Chevron, IconeCabinet, IconeCheck, IconePortefeuille, IconeRecu,
@@ -162,15 +162,29 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
               <>
                 <div className="entete-section" style={{ marginTop: 18 }}><h3>Réglé par</h3></div>
                 <div className="choix">
-                  {MODES_PAIEMENT.map((m: ModePaiement) => (
+                  {reglages.modesPaiement.filter((m) => m.actif).map((m) => (
                     <button
-                      key={m}
-                      aria-pressed={seance.modePaiement === m}
-                      onClick={() => majSeance(seanceId, { modePaiement: m })}
+                      key={m.id}
+                      aria-pressed={seance.modePaiement === m.id}
+                      onClick={() => majSeance(seanceId, { modePaiement: m.id })}
                     >
-                      {LIBELLE_PAIEMENT[m]}
+                      {m.nom}
                     </button>
                   ))}
+                </div>
+
+                <div className="champ" style={{ marginTop: 16 }}>
+                  <label htmlFor="date-paiement">Date de l’encaissement</label>
+                  <input
+                    id="date-paiement"
+                    type="date"
+                    value={seance.datePaiement ?? ''}
+                    onChange={(e) => majSeance(seanceId, { datePaiement: e.target.value || null })}
+                  />
+                  <p className="aide">
+                    À corriger si le règlement est arrivé après la séance : c’est cette
+                    date qui compte dans les encaissements du mois.
+                  </p>
                 </div>
               </>
             )}

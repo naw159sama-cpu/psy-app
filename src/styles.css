@@ -2082,3 +2082,45 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .compteur-jauge span { background: var(--sauge); }
 .somme-jauge span { background: var(--sauge-clair); }
 .hero-jauge span { background: var(--sauge-clair); }
+
+/* -------------------------------------------------------------------------
+   Réglage des moyens de paiement
+   ------------------------------------------------------------------------- */
+
+.ligne-moyen {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--blanc);
+  border: 1px solid var(--contour-doux);
+  border-radius: var(--r-douce);
+  padding: 9px 12px;
+  box-shadow: var(--ombre-fine);
+}
+.moyen-nom {
+  flex: 1; min-width: 0;
+  border: 0; background: none;
+  padding: 4px 0;
+  font-size: .92rem; font-weight: 600;
+  color: var(--encre);
+  min-height: 0;
+}
+.moyen-nom:focus {
+  outline: none;
+  border-bottom: 1.5px solid var(--sauge);
+}
+.ligne-moyen .btn.petit.danger { min-width: 38px; padding: 6px 10px; }
+
+.ajout-moyen { display: flex; gap: 8px; }
+.ajout-moyen input {
+  flex: 1; min-width: 0;
+  background: var(--blanc);
+  border: 1.5px solid var(--contour);
+  border-radius: var(--r-champ);
+  padding: 11px 14px;
+  min-height: 46px;
+}
+.ajout-moyen input:focus {
+  outline: none;
+  border-color: var(--sauge);
+  box-shadow: 0 0 0 4px rgba(86, 99, 58, .12);
+}
+.ajout-moyen .btn { flex: 0 0 auto; }

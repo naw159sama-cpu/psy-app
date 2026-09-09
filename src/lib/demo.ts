@@ -74,6 +74,9 @@ const DESCRIPTIONS = [
   'Vient accompagnée de sa sœur', '', '', 'Prévoir un peu plus de temps',
 ]
 
+/** Les comptes sur lesquels le cabinet est réglé, dans la démonstration. */
+const MOYENS = ['especes', 'ccp', 'virement', 'especes', 'cheque', 'especes']
+
 const REPRISES = [
   'Revenir sur la lettre qu’elle voulait écrire',
   'Reprendre l’exercice de respiration, voir s’il a été fait',
@@ -153,8 +156,12 @@ export function genererDemo(): Donnees {
         tarif: reglages.tarifDefaut,
         partPsyPct: reglages.partPsyPct,
         paye: faite && (j + c) % 9 !== 0,
-        modePaiement: faite ? 'especes' : null,
-        datePaiement: faite ? date : null,
+        modePaiement: faite ? MOYENS[(j + c) % MOYENS.length] : null,
+        // Un règlement sur quatre arrive quelques jours après la séance :
+        // c'est ce que la vraie vie fait, et le récapitulatif doit le montrer.
+        datePaiement: faite
+          ? ((j + c) % 4 === 1 ? ajouterJours(date, 6) : date)
+          : null,
         description: DESCRIPTIONS[(j + c) % DESCRIPTIONS.length],
         etatObserve: redigee ? ETATS[(j + c) % ETATS.length] : '',
         note: redigee ? CONTENUS[(j + c) % CONTENUS.length] : '',

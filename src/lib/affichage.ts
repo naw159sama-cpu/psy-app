@@ -1,4 +1,4 @@
-import type { Patient, StatutSeance, StatutPatient, ModePaiement } from './types'
+import type { ModePaiement, Patient, Reglages, StatutPatient, StatutSeance } from './types'
 import { initiales } from './format'
 
 /** Nom affiché, remplacé par les initiales quand l'écran de confidentialité est actif. */
@@ -40,11 +40,8 @@ export const LIBELLE_STATUT_PATIENT: Record<StatutPatient, string> = {
   cloture: 'Suivi terminé',
 }
 
-export const LIBELLE_PAIEMENT: Record<ModePaiement, string> = {
-  especes: 'Espèces',
-  cheque: 'Chèque',
-  virement: 'Virement',
-  cb: 'Carte',
+/** Nom lisible d'un moyen de paiement, tel qu'elle l'a saisi. */
+export function nomMoyenPaiement(id: ModePaiement | null, r: Reglages): string {
+  if (!id) return 'Non précisé'
+  return r.modesPaiement.find((m) => m.id === id)?.nom ?? id
 }
-
-export const MODES_PAIEMENT: ModePaiement[] = ['especes', 'cheque', 'virement', 'cb']
