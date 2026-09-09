@@ -161,7 +161,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   margin: 0 auto;
   min-height: 100vh;
   background: var(--fond);
-  padding-bottom: calc(116px + env(safe-area-inset-bottom));
+  /* De quoi passer sous la barre d’onglets ET sous le bouton flottant. */
+  padding-bottom: calc(164px + env(safe-area-inset-bottom));
 }
 
 .barre-haut {
@@ -2176,4 +2177,141 @@ button, input, select, textarea { font: inherit; color: inherit; }
   margin-bottom: 9px;
   font-size: .84rem; font-weight: 600;
   color: var(--ambre-fonce);
+}
+
+/* -------------------------------------------------------------------------
+   Grille de la semaine — le format du mois, en plus large
+   ------------------------------------------------------------------------- */
+
+.grille-semaine {
+  display: grid;
+  gap: 6px;
+  background: var(--blanc);
+  border: 1px solid var(--contour-doux);
+  border-radius: var(--r-carte);
+  box-shadow: var(--ombre-fine);
+  padding: 9px;
+}
+
+.gs-case {
+  display: flex; flex-direction: column;
+  gap: 7px;
+  min-height: 152px;
+  padding: 8px 6px 9px;
+  border: 0;
+  background: var(--carte-basse);
+  border-radius: 15px;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  animation: monte .36s var(--sortie) both;
+  transition: background .18s ease, transform .16s var(--ressort), box-shadow .2s ease;
+}
+.gs-case:nth-child(1) { animation-delay: .03s; }
+.gs-case:nth-child(2) { animation-delay: .07s; }
+.gs-case:nth-child(3) { animation-delay: .11s; }
+.gs-case:nth-child(n+4) { animation-delay: .15s; }
+.gs-case:hover { background: var(--conteneur); box-shadow: var(--ombre-carte); }
+.gs-case:active { transform: scale(.97); }
+.gs-case.actuel { box-shadow: inset 0 0 0 2px var(--encre); }
+
+.gs-entete {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 4px;
+  padding: 0 2px 1px;
+}
+.gs-jour {
+  font-size: .66rem; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--texte-doux);
+}
+.gs-numero {
+  font-size: .96rem; font-weight: 700; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--encre);
+}
+.gs-case.actuel .gs-numero {
+  background: var(--encre); color: var(--fond);
+  border-radius: 99px;
+  min-width: 22px; height: 22px;
+  display: inline-grid; place-items: center;
+  font-size: .78rem;
+}
+
+.gs-rdvs { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+/* La pastille est lisible : l'heure en gras, le prénom entier à côté. */
+/* L'heure sur sa ligne, le prénom sur la sienne : il a toute la largeur,
+   et c'est lui qu'il faut pouvoir lire d'un coup d'œil. */
+.gs-rdv {
+  display: flex; flex-direction: column;
+  padding: 4px 6px 5px;
+  border-radius: 9px;
+  background: var(--sauge-pale);
+  line-height: 1.25;
+  min-width: 0;
+  position: relative;
+}
+.gs-heure {
+  font-size: .62rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em;
+  opacity: .72;
+}
+.gs-nom {
+  min-width: 0;
+  font-size: .78rem; font-weight: 600;
+  letter-spacing: -.01em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Un point discret suffit à dire qu'il reste à encaisser. */
+.gs-point {
+  position: absolute; top: 4px; right: 4px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--terre-vif);
+  opacity: .75;
+}
+
+.gs-rdv.t0 { background: var(--sauge-pale); color: var(--sauge-texte); }
+.gs-rdv.t1 { background: var(--ardoise-pale); color: var(--ardoise-texte); }
+.gs-rdv.t2 { background: var(--terre-pale); color: var(--terre-texte); }
+.gs-rdv.t3 { background: var(--ambre-pale); color: var(--ambre-texte); }
+.gs-rdv.manquee {
+  background: repeating-linear-gradient(-45deg, var(--terre-pale) 0 4px, #f7ddd5 4px 8px);
+  color: var(--terre-texte);
+}
+.gs-rdv.manquee .gs-nom { text-decoration: line-through; opacity: .8; }
+
+.gs-libre {
+  font-size: .7rem; color: var(--texte-doux);
+  padding: 3px 6px;
+  opacity: .65;
+}
+
+.gs-densite {
+  height: 3px; border-radius: 99px;
+  background: var(--conteneur-max);
+  overflow: hidden;
+}
+.gs-densite span {
+  display: block; height: 100%; border-radius: 99px;
+  background: var(--sauge);
+  transform-origin: left;
+  animation: glisseBarre .55s var(--sortie) both;
+}
+.gs-densite span.pleine { background: var(--encre); }
+
+.gs-mois {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  text-align: center;
+  font-size: .7rem; font-weight: 600;
+  color: var(--texte-doux);
+}
+
+/* Écran plus large : on respire davantage. */
+@media (min-width: 420px) {
+  .gs-case { min-height: 164px; padding: 10px 8px 11px; }
+  .gs-nom { font-size: .82rem; }
 }

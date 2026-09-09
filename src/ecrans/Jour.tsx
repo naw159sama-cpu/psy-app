@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import CarteJourSemaine from '../composants/CarteJourSemaine'
+import GrilleSemaine from '../composants/GrilleSemaine'
 import { useDonnees, majSeance } from '../lib/store'
 import {
   aujourdhui, ajouterJours, dateBreve, dateDeIso, dateLongue, debutSemaine, jourDeIso,
@@ -194,25 +194,18 @@ export default function Jour({
 
       <section>
         <div className="entete-section">
-          <h3>
-            Ma semaine
-            <span className="pastille-date">{libelleSemaine(semaine)}</span>
-          </h3>
+          <h3>Ma semaine</h3>
           <button className="lien-section" onClick={onVoirAgenda}>
             Vue agenda
             <Chevron taille={15} />
           </button>
         </div>
-        <div className="pile-semaine">
-          {joursSemaine.map((d) => (
-            <CarteJourSemaine
-              key={d}
-              date={d}
-              estAujourdhui={d === today}
-              onOuvrir={onOuvrirJour}
-            />
-          ))}
-        </div>
+        <GrilleSemaine
+          debut={semaine}
+          aujourdHui={today}
+          libelle={libelleSemaine(semaine)}
+          onOuvrirJour={onOuvrirJour}
+        />
         {joursSemaine.length === 0 && (
           <div className="vide">
             <span className="disque grand"><IconeAgenda taille={22} /></span>
