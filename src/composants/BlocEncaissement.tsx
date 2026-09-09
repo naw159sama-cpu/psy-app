@@ -24,10 +24,18 @@ export default function BlocEncaissement({ seance, compact = false }: Props) {
   const [vientDePayer, setVientDePayer] = useState(false)
 
   const moyens = reglages.modesPaiement.filter((m) => m.actif)
-  const due = estDue(seance.statut)
+  // Une annulation dans les délais est la seule situation où il n'y a rien à
+  // encaisser. Pour tout le reste — y compris un rendez-vous à venir — le
+  // règlement doit pouvoir être noté : beaucoup de gens paient en arrivant.
+  const encaissable = seance.statut !== 'annule_delai'
+  // Payer une séance encore « prévue » ou « en retard », c'est dire qu'elle a eu
+  // lieu : le statut suit, sinon la somme n'entrerait dans aucun total.
+  const marqueraEffectuee = !estDue(seance.statut)
 
-  if (!due) {
-    return compact ? null : <p className="aide">Rien à encaisser pour cette séance.</p>
+  if (!encaissable) {
+    return compact
+      ? <p className="aide">Annulée à temps : rien à encaisser.</p>
+      : <p className="aide">Rien à encaisser pour cette séance.</p>
   }
 
   /** Encaisse d'un geste : moyen habituel, à la date du jour. */
@@ -36,6 +44,7 @@ export default function BlocEncaissement({ seance, compact = false }: Props) {
       paye: true,
       modePaiement: moyenId,
       datePaiement: seance.datePaiement ?? aujourdhui(),
+      ...(marqueraEffectuee ? { statut: 'effectue' as const } : {}),
     })
     setVientDePayer(true)
     setOuvert(false)
@@ -107,6 +116,11 @@ export default function BlocEncaissement({ seance, compact = false }: Props) {
       {ouvert ? (
         <div className="encaisse-detail ouvert">
           <span className="encaisse-question">Réglé comment ?</span>
+          {marqueraEffectuee && (
+            <p className="aide" style={{ margin: '0 0 9px' }}>
+              La séance passera aussi en « effectuée ».
+            </p>
+          )}
           <div className="choix">
             {moyens.map((m) => (
               <button key={m.id} onClick={() => encaisser(m.id)}>{m.nom}</button>
@@ -132,7 +146,7 @@ export default function BlocEncaissement({ seance, compact = false }: Props) {
         </button>
       )}
 
-      {!compact && !ouvert && (
+      {!compact && !ouvert && !marqueraEffectuee && (
         <p className="aide">
           Ma part {da(partPsy(seance))} · cabinet {da(partCabinet(seance))}
         </p>

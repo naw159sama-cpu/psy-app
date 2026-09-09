@@ -15,5 +15,14 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     const sw = new URL('sw.js', new URL(import.meta.env.BASE_URL, location.href)).href
     navigator.serviceWorker.register(sw).catch(() => {})
+
+    // Une nouvelle version vient de prendre la main : on recharge une fois,
+    // pour qu'elle n'ait jamais à le faire elle-même.
+    let recharge = false
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (recharge) return
+      recharge = true
+      location.reload()
+    })
   })
 }

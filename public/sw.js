@@ -7,7 +7,7 @@
 //     mise en ligne ne parviendrait jamais à qui a déjà ouvert l'application ;
 //   - les fichiers construits (assets/) passent par le cache d'abord : leur nom
 //     change à chaque construction, ils ne peuvent pas être périmés.
-const CACHE = 'cabinet-v3'
+const CACHE = 'cabinet-v4'
 const ACCUEIL = new URL('./index.html', self.location).href
 const RACINE = new URL('./', self.location).pathname
 
@@ -43,9 +43,11 @@ self.addEventListener('fetch', (e) => {
   if (!url.pathname.startsWith(RACINE)) return
 
   // La page : réseau d'abord, cache en secours hors connexion.
+  // « no-store » saute le cache HTTP du navigateur : GitHub Pages sert la page
+  // avec dix minutes de validité, ce qui retarderait d'autant chaque mise à jour.
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-store' })
         .then((rep) => memoriser(req, rep))
         .catch(() => caches.match(req).then((hit) => hit || caches.match(ACCUEIL))),
     )
