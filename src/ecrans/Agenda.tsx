@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import ListeCreneaux from '../composants/ListeCreneaux'
 import GrilleMois from '../composants/GrilleMois'
 import CarteJourSemaine from '../composants/CarteJourSemaine'
+import Anneau from '../composants/Anneau'
 import { useCompteur } from '../composants/Compteur'
 import { useDonnees } from '../lib/store'
 import {
@@ -253,28 +254,28 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre, onOuvrirJour }:
       <section className="duo-cartes">
         <div className="carte-stat">
           <div className="stat-entete">
-            <span className="disque"><IconeAgenda taille={16} /></span>
-            <span className="stat-libelle">Créneaux pris</span>
+            <span className="stat-libelle">Taux d’occupation</span>
+            <Anneau
+              pourcent={capaciteSemaine > 0 ? (dansLaSemaine.length / capaciteSemaine) * 100 : 0}
+            />
           </div>
           <div className="stat-valeur">
             <span className="nombre">{dansLaSemaine.length}</span>
             <span className="unite">/ {capaciteSemaine}</span>
           </div>
-          <p className="stat-detail">
-            {pourcent(capaciteSemaine > 0 ? Math.round((dansLaSemaine.length / capaciteSemaine) * 100) : 0)} de la semaine
-          </p>
+          <p className="stat-detail">créneaux réservés</p>
         </div>
-        <div className="carte-stat">
+        <div className="carte-stat pleine">
           <div className="stat-entete">
+            <span className="stat-libelle">Honoraires estimés</span>
             <span className="disque"><IconePortefeuille /></span>
-            <span className="stat-libelle">Ma part</span>
           </div>
           <div className="stat-valeur">
             <span className="nombre">{montantSeul(partSemaine)}</span>
             <span className="unite">DA</span>
           </div>
           <p className="stat-detail">
-            {bSemaine.nbDues} séance{bSemaine.nbDues > 1 ? 's' : ''} due{bSemaine.nbDues > 1 ? 's' : ''}
+            Semaine · {bSemaine.nbDues} séance{bSemaine.nbDues > 1 ? 's' : ''} due{bSemaine.nbDues > 1 ? 's' : ''}
           </p>
         </div>
       </section>
