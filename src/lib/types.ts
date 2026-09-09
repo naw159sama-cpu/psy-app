@@ -165,6 +165,12 @@ export interface Reglages {
 
 export interface Donnees {
   version: number
+  /**
+   * Instant de la dernière modification, au format ISO. C'est lui qui tranche
+   * entre la copie du téléphone et celle du coffre en ligne quand les deux ont
+   * bougé. Jamais affiché : c'est une date d'horloge, pas une date de calendrier.
+   */
+  majLe: string
   patients: Patient[]
   seances: Seance[]
   reglages: Reglages

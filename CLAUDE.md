@@ -123,6 +123,32 @@ Les tests utilisent le lanceur intégré de Node (aucune dépendance). Toute mod
   « Sans forcer, et sans jamais aller dans la douleur » pour tout ce qui touche
   au corps.
 
+## Règles du coffre en ligne
+
+- **Le téléphone écrit toujours en premier.** Une modification est enregistrée
+  en local, puis envoyée. Jamais l'inverse : elle doit pouvoir travailler dans
+  une pièce sans réseau sans s'en apercevoir.
+- **Un document vide ne remplace jamais un document plein**, quelle que soit sa
+  date (`quelGarder`). Une mémoire de navigateur effacée ou un coffre neuf ne
+  doivent pas pouvoir emporter des dossiers. Deux tests gardent cette règle.
+- Le perdant d'un conflit part dans `coffre_historique` **avant** d'être
+  remplacé. Rien n'est jamais écrasé sans copie.
+- L'écriture est conditionnée à la version connue (`version=eq.n` dans l'URL) :
+  c'est PostgreSQL qui refuse une écriture périmée, pas l'application.
+- La sécurité repose sur les politiques RLS de `supabase/schema.sql`, jamais sur
+  le code de l'application. Une requête mal formée ne doit pas pouvoir lire la
+  ligne d'un autre.
+- La clé `anon` est publique et vit dans `src/lib/config.ts`. La clé
+  `service_role` ne doit apparaître **nulle part** dans ce dépôt.
+- `config.ts` vide = mode local, exactement comme avant le coffre. Ce repli doit
+  rester : il permet de publier et de développer sans base.
+- Pas de bibliothèque Supabase. GoTrue et PostgREST sont deux interfaces HTTP
+  documentées ; `src/lib/nuage.ts` les appelle avec `fetch`, et cela doit le
+  rester.
+- Aucun message d'erreur technique à l'écran : tout passe par `messageErreur`.
+- L'export manuel de `Réglages → Sauvegarder` ne disparaît jamais. C'est la
+  seule sortie qui ne dépend d'aucun fournisseur.
+
 ## Écueils connus
 
 - **Ne jamais modifier une `ref` dans une fonction de mise à jour d'état.**

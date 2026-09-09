@@ -50,7 +50,8 @@ export const REGLAGES_DEFAUT: Reglages = {
 
 function vide(): Donnees {
   return {
-    version: VERSION, patients: [], seances: [], journalRappels: [],
+    version: VERSION, majLe: new Date().toISOString(),
+    patients: [], seances: [], journalRappels: [],
     reglages: { ...REGLAGES_DEFAUT },
   }
 }
@@ -91,6 +92,9 @@ export function normaliserSeance(s: Seance): Seance {
 function normaliser(d: Partial<Donnees>): Donnees {
   return {
     version: VERSION,
+    // Un enregistrement d'avant le coffre n'a pas de date : on le date au plus
+    // ancien, pour qu'il ne l'emporte jamais sur ce que contient déjà le coffre.
+    majLe: typeof d.majLe === 'string' && d.majLe ? d.majLe : new Date(0).toISOString(),
     patients: (d.patients ?? []).map(normaliserPatient),
     seances: (d.seances ?? []).map(normaliserSeance),
     journalRappels: d.journalRappels ?? [],
@@ -118,19 +122,42 @@ function charger(): Donnees {
 let etat: Donnees = charger()
 const abonnes = new Set<() => void>()
 
-function publier(suivant: Donnees) {
-  etat = suivant
+/**
+ * Enregistre et prévient. `horodater` vaut faux dans un seul cas : quand on
+ * adopte le document venu du coffre. Sa date de modification est la sienne, et
+ * la réécrire ferait croire à une modification locale — donc à un renvoi.
+ */
+function publier(suivant: Donnees, horodater = true) {
+  etat = horodater ? { ...suivant, majLe: new Date().toISOString() } : suivant
   try {
     localStorage.setItem(CLE, JSON.stringify(etat))
   } catch (e) {
     console.error('Sauvegarde impossible', e)
   }
   abonnes.forEach((f) => f())
+  if (horodater) modifications.forEach((f) => f())
 }
 
 function abonner(f: () => void) {
   abonnes.add(f)
   return () => { abonnes.delete(f) }
+}
+
+/**
+ * Les abonnés aux seules modifications locales — la synchronisation, et rien
+ * d'autre. Distinct de `abonner`, qui sert au rendu et se déclenche aussi
+ * quand le coffre nous rend une version.
+ */
+const modifications = new Set<() => void>()
+
+export function abonnerModifications(f: () => void): () => void {
+  modifications.add(f)
+  return () => { modifications.delete(f) }
+}
+
+/** Adopte le document du coffre, sans le faire passer pour une modification locale. */
+export function adopter(document: Donnees) {
+  publier(normaliser(document), false)
 }
 
 export function useDonnees(): Donnees {

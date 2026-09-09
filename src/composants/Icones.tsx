@@ -274,6 +274,26 @@ export function IconeLecture({ taille = 18 }: Props) {
   )
 }
 
+export function IconeCoffre({ taille = 16 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <rect x="3.2" y="4.6" width="17.6" height="14.8" rx="2.6" />
+      <circle cx="10.4" cy="12" r="3.1" />
+      <path d="M10.4 8.9v1M10.4 14.1v1M17 9.6v4.8" />
+    </svg>
+  )
+}
+
+export function IconeSablier({ taille = 14 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <path d="M7 4.2h10M7 19.8h10" />
+      <path d="M8 4.2v3.1c0 2 4 3.2 4 4.7s-4 2.7-4 4.7v3.1" />
+      <path d="M16 4.2v3.1c0 2-4 3.2-4 4.7s4 2.7 4 4.7v3.1" />
+    </svg>
+  )
+}
+
 export function IconePause({ taille = 18 }: Props) {
   return (
     <svg {...base(taille)} fill="currentColor" stroke="none">

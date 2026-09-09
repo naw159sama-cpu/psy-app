@@ -185,5 +185,8 @@ export function genererDemo(): Donnees {
     }
   }
 
-  return { version: 4, patients, seances, reglages, journalRappels: [] }
+  return {
+    version: 4, majLe: new Date().toISOString(),
+    patients, seances, reglages, journalRappels: [],
+  }
 }

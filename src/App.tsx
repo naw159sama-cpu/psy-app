@@ -12,6 +12,12 @@ import FeuilleNouveauPatient from './composants/FeuilleNouveauPatient'
 import FeuilleRappels from './composants/FeuilleRappels'
 import FeuilleJour from './composants/FeuilleJour'
 import FeuilleEspace from './composants/FeuilleEspace'
+import FeuilleCompte from './composants/FeuilleCompte'
+import Connexion from './composants/Connexion'
+import EtatCoffre from './composants/EtatCoffre'
+import { coffreConfigure } from './lib/config'
+import { lireSession, sessionValide, type Session } from './lib/nuage'
+import { arreter, demarrer, useSynchro } from './lib/synchro'
 import LecteurExercice from './composants/LecteurExercice'
 import { trouverExercice } from './lib/exercices'
 import {
@@ -34,6 +40,7 @@ type Panneau =
   | { type: 'rappels' }
   | { type: 'jour'; date: string }
   | { type: 'espace' }
+  | { type: 'compte' }
   | { type: 'exercice'; id: string }
   | null
 
@@ -75,10 +82,43 @@ export default function App() {
   // masquerait la légende du nuage.
   const [vuePatients, setVuePatients] = useState<'liste' | 'apercu'>('liste')
 
+  // Le coffre en ligne. Tant qu'il n'est pas configuré, rien de tout ceci
+  // n'existe et l'application s'ouvre directement sur la journée.
+  const [session, setSession] = useState<Session | null>(
+    () => (coffreConfigure() ? lireSession() : null),
+  )
+  const [sessionVerifiee, setSessionVerifiee] = useState(!coffreConfigure())
+  const [avisPorte, setAvisPorte] = useState('')
+  const synchro = useSynchro()
+
   useEffect(() => {
     const e = localStorage.getItem('psy-app:echelle')
     if (e) document.documentElement.style.setProperty('--echelle', e)
   }, [])
+
+  // Au démarrage : renouveler le jeton s'il a vieilli, puis brancher la navette.
+  useEffect(() => {
+    if (!coffreConfigure()) return
+    let vivant = true
+    // Une première visite n'a rien à expliquer : l'avis ne concerne que celle
+    // qui était connectée et dont le jeton n'a pas pu être renouvelé.
+    const avaitUneSession = lireSession() !== null
+    void sessionValide().then((s) => {
+      if (!vivant) return
+      if (s) demarrer(s)
+      setSession(s)
+      setSessionVerifiee(true)
+      if (!s && avaitUneSession) setAvisPorte('Votre session a expiré. Reconnectez-vous.')
+    })
+    return () => { vivant = false; arreter() }
+  }, [])
+
+  // Le serveur a refusé le jeton en cours de route : on retourne à la porte.
+  useEffect(() => {
+    if (!session || synchro.phase !== 'deconnecte') return
+    setSession(null)
+    setAvisPorte(synchro.message || 'Votre session a expiré. Reconnectez-vous.')
+  }, [session, synchro.phase, synchro.message])
 
   // Ctrl+M : masquer les noms d'un geste quand quelqu'un regarde l'écran.
   useEffect(() => {
@@ -130,6 +170,24 @@ export default function App() {
     } else if (onglet === 'patients' && vuePatients === 'liste') {
       fab = { libelle: 'Nouveau patient', action: () => setPanneau({ type: 'nouveau-patient' }) }
     }
+  }
+
+  // Placé après tous les crochets : leur ordre doit rester le même d'un rendu
+  // à l'autre, connectée ou non.
+  if (coffreConfigure() && !session) {
+    if (!sessionVerifiee) {
+      return (
+        <div className="porte">
+          <div className="porte-carte"><p className="porte-sous">Ouverture…</p></div>
+        </div>
+      )
+    }
+    return (
+      <Connexion
+        avis={avisPorte}
+        onConnectee={(s) => { demarrer(s); setSession(s); setAvisPorte('') }}
+      />
+    )
   }
 
   const nomCabinet = reglages.nomCabinet.trim() || 'Cabinet de psychologie'
@@ -194,6 +252,8 @@ export default function App() {
         </div>
       </header>
 
+      <EtatCoffre onDetail={() => setPanneau({ type: 'compte' })} />
+
       <main className="contenu" key={vue.type === 'onglet' ? onglet : vue.type === 'rappels' ? 'rappels' : `patient-${vue.id}`}>
         {enTete && (
           <div className="titre-page">
@@ -252,7 +312,7 @@ export default function App() {
         ) : onglet === 'finances' ? (
           <Argent onOuvrirSeance={ouvrirSeance} />
         ) : (
-          <Reglages />
+          <Reglages onCompte={() => setPanneau({ type: 'compte' })} />
         )}
       </main>
 
@@ -309,6 +369,13 @@ export default function App() {
           onFermer={() => setPanneau(null)}
           onOuvrirSeance={ouvrirSeance}
           onCreneauLibre={creneauLibre}
+        />
+      )}
+      {panneau?.type === 'compte' && session && (
+        <FeuilleCompte
+          email={session.utilisateur.email}
+          onFermer={() => setPanneau(null)}
+          onDeconnectee={() => { setPanneau(null); setSession(null); setAvisPorte('') }}
         />
       )}
       {panneau?.type === 'espace' && (

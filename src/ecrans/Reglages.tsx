@@ -7,11 +7,14 @@ import ReglagesRappels from '../composants/ReglagesRappels'
 import ReglagesPaiement from '../composants/ReglagesPaiement'
 import { aujourdhui, JOURS_COURTS } from '../lib/dates'
 import { da, pourcent } from '../lib/format'
-import { IconeCabinet, IconeCadenas, IconePortefeuille, IconeRecu } from '../composants/Icones'
+import {
+  Chevron, IconeCabinet, IconeCadenas, IconeCoffre, IconePortefeuille, IconeRecu,
+} from '../composants/Icones'
+import { coffreConfigure } from '../lib/config'
 
 const CLE_ECHELLE = 'psy-app:echelle'
 
-export default function Reglages() {
+export default function Reglages({ onCompte }: { onCompte: () => void }) {
   const { reglages, patients, seances } = useDonnees()
   const fichier = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState('')
@@ -71,6 +74,22 @@ export default function Reglages() {
 
   return (
     <>
+      {coffreConfigure() && (
+        <section>
+          <div className="entete-section"><h3>Mon compte</h3></div>
+          <button className="carte-ligne" onClick={onCompte}>
+            <span className="disque"><IconeCoffre taille={16} /></span>
+            <span className="ligne-corps">
+              <span className="ligne-titre"><span className="nom">Le coffre en ligne</span></span>
+              <span className="ligne-sous">
+                <span>État, mot de passe, déconnexion</span>
+              </span>
+            </span>
+            <Chevron />
+          </button>
+        </section>
+      )}
+
       <section>
         <div className="entete-section"><h3>Mon cabinet</h3></div>
         <div className="champ">
@@ -198,11 +217,19 @@ export default function Reglages() {
         <div className="entete-section"><h3>Sauvegarde</h3></div>
         <div className="note-contexte" style={{ marginBottom: 14 }}>
           <IconeCadenas taille={17} />
-          <span>
-            <strong>À faire une fois par semaine.</strong>
-            Tout est stocké dans ce téléphone uniquement. Sans sauvegarde, un téléphone perdu
-            emporte les dossiers.
-          </span>
+          {coffreConfigure() ? (
+            <span>
+              <strong>Les dossiers sont déjà dans le coffre en ligne.</strong>
+              Cette sauvegarde-ci est la sortie de secours : un fichier à vous, lisible,
+              qui ne dépend ni de l’application ni d’un fournisseur. À faire de temps en temps.
+            </span>
+          ) : (
+            <span>
+              <strong>À faire une fois par semaine.</strong>
+              Tout est stocké dans ce téléphone uniquement. Sans sauvegarde, un téléphone perdu
+              emporte les dossiers.
+            </span>
+          )}
         </div>
         <div className="btn-rang">
           <button className="btn principal" onClick={telecharger}>Sauvegarder</button>
