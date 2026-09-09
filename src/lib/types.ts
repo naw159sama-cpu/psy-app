@@ -45,6 +45,7 @@ export interface Patient {
 
 export type StatutSeance =
   | 'prevu'
+  | 'retard'            // attendue, elle a du retard -> pas encore due
   | 'effectue'
   | 'annule_delai'      // annulée dans les délais -> non facturée
   | 'annule_hors_delai' // annulée trop tard -> facturée
@@ -55,6 +56,9 @@ export type StatutSeance =
  * cabinet a ses comptes — CCP, telle banque, telle autre — et les nomme
  * lui-même dans les réglages.
  */
+/** En cabinet ou à distance. */
+export type ModePresence = 'presentiel' | 'visio'
+
 export type ModePaiement = string
 
 export interface MoyenPaiement {
@@ -74,6 +78,8 @@ export interface Seance {
   paye: boolean
   modePaiement: ModePaiement | null
   datePaiement: string | null
+  /** En cabinet, ou en visioconférence. */
+  modePresence: ModePresence
   /**
    * Note pratique attachée au rendez-vous : « apporte ses résultats »,
    * « vient avec sa sœur ». Rien de clinique — cela se lit d'un coup d'œil

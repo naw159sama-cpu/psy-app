@@ -2768,3 +2768,27 @@ body { background: #eef3f6; }
 }
 .carte-rappel-entree.urgente { background: var(--ambre-pale); border-color: var(--ambre-bord); }
 .carte-rappel-entree.urgente .entree-titre { color: var(--ambre-texte); }
+
+/* -------------------------------------------------------------------------
+   Statut, présence et encaissement dans la fenêtre du jour
+   ------------------------------------------------------------------------- */
+
+.rdv-bloc { margin-bottom: 12px; }
+.rdv-etiquette {
+  display: block;
+  margin-bottom: 7px;
+  font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em;
+  color: var(--texte-doux);
+}
+.rdv-bloc .choix button { padding: 7px 13px; min-height: 36px; font-size: .8rem; }
+.rdv-bloc .aide { margin: 7px 2px 0; }
+.rdv-bloc .btn { text-decoration: none; }
+
+/* Violet : la séance à distance, comme dans la maquette de l'agenda. */
+.puce.violet {
+  background: var(--violet-pale);
+  color: var(--violet-texte);
+  border-color: var(--violet-bord);
+}
+.gs-rdv.visio, .js-rdv.visio { box-shadow: inset 2px 0 0 var(--violet-texte); }

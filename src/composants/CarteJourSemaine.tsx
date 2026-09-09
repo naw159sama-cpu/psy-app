@@ -51,7 +51,7 @@ export default function CarteJourSemaine({ date, estAujourdhui, onOuvrir }: Prop
             const p = patients.find((x) => x.id === s.patientId)
             const manquee = s.statut === 'absent' || s.statut.startsWith('annule')
             return (
-              <li key={s.id} className={`js-rdv t${s.creneau % 4}${manquee ? ' manquee' : ''}`}>
+              <li key={s.id} className={`js-rdv t${s.creneau % 4}${manquee ? ' manquee' : ''}${s.modePresence === 'visio' ? ' visio' : ''}`}>
                 <span className="js-heure">{reglages.creneaux[s.creneau]?.debut ?? ''}</span>
                 <span className={`js-nom${reglages.masquerNoms ? ' flou' : ''}`}>
                   {nomAffiche(p, false)}

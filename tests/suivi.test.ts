@@ -18,6 +18,7 @@ function seance(champs: Partial<Seance> = {}): Seance {
     paye: true,
     modePaiement: 'especes',
     datePaiement: '2026-09-01',
+    modePresence: 'presentiel',
     description: '',
     etatObserve: '',
     note: '',

@@ -34,6 +34,7 @@ function classePuce(statut: StatutSeance): string {
   switch (statut) {
     case 'effectue': return 'faite'
     case 'prevu': return 'avenir'
+    case 'retard': return 'attente'
     case 'absent': return 'alerte'
     case 'annule_hors_delai': return 'attente'
     case 'annule_delai': return 'gris'

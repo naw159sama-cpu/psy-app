@@ -3,14 +3,16 @@ import Feuille from './Feuille'
 import ChampDicte from './ChampDicte'
 import BlocEncaissement from './BlocEncaissement'
 import { journaliserRappel, majSeance, marquerRappelEnvoye, useDonnees } from '../lib/store'
+import { AIDE_STATUT } from '../lib/affichage'
 import { eligibilite, lienWhatsApp, messagePour } from '../lib/rappels'
 import { estDue } from '../lib/argent'
 import { dateLongue } from '../lib/dates'
 import { initiales } from '../lib/format'
 import { LIBELLE_STATUT, couleurStatut, nomAffiche } from '../lib/affichage'
-import type { Patient, Seance } from '../lib/types'
+import type { ModePresence, Patient, Seance, StatutSeance } from '../lib/types'
 import {
-  Chevron, IconeBas, IconeCheck, IconeNote, IconePlus, IconeWhatsApp,
+  Chevron, IconeAgenda, IconeBas, IconeCheck, IconeNote, IconePlus, IconeVisio,
+  IconeWhatsApp,
 } from './Icones'
 
 interface Props {
@@ -19,6 +21,15 @@ interface Props {
   onOuvrirSeance: (seanceId: string) => void
   onCreneauLibre: (date: string, creneau: number) => void
 }
+
+const STATUTS: StatutSeance[] = [
+  'prevu', 'retard', 'effectue', 'absent', 'annule_delai', 'annule_hors_delai',
+]
+
+const PRESENCES: Array<{ cle: ModePresence; libelle: string }> = [
+  { cle: 'presentiel', libelle: 'Au cabinet' },
+  { cle: 'visio', libelle: 'À distance' },
+]
 
 /* ------------------------------------------------------------------ */
 
@@ -43,10 +54,19 @@ function LigneRdv({ seance, patient, ouverte, onBasculer, onOuvrirSeance }: Lign
     return () => clearTimeout(t)
   }, [description, seance.id])
 
+  const changerStatut = (statut: StatutSeance) => {
+    const champs: Partial<Seance> = { statut }
+    if (!estDue(statut)) { champs.paye = false; champs.modePaiement = null; champs.datePaiement = null }
+    majSeance(seance.id, champs)
+  }
+
   const creneau = reglages.creneaux[seance.creneau]
   const e = eligibilite(patient, reglages)
   // Pour une confirmation, le modèle dédié ; sinon le premier actif.
-  const modele = reglages.modelesRappel.find((m) => m.actif && m.id === 'confirmation')
+  const modele = (seance.modePresence === 'visio'
+    ? reglages.modelesRappel.find((m) => m.actif && m.id === 'distance')
+    : undefined)
+    ?? reglages.modelesRappel.find((m) => m.actif && m.id === 'confirmation')
     ?? reglages.modelesRappel.find((m) => m.actif)
   const message = patient && modele ? messagePour(seance, patient, reglages, modele) : ''
   const dejaEnvoye = !!seance.rappelEnvoyeLe
@@ -75,6 +95,9 @@ function LigneRdv({ seance, patient, ouverte, onBasculer, onOuvrirSeance }: Lign
               {LIBELLE_STATUT[seance.statut]}
             </span>
           )}
+          {seance.modePresence === 'visio' && (
+            <span className="puce violet"><IconeVisio taille={12} /> Visio</span>
+          )}
           {dejaEnvoye && <span className="puce ok">Confirmé</span>}
           {estDue(seance.statut) && (
             <span className={`puce ${seance.paye ? 'ok' : 'attente'}`}>
@@ -96,6 +119,56 @@ function LigneRdv({ seance, patient, ouverte, onBasculer, onOuvrirSeance }: Lign
             placeholder="Apporte ses résultats, vient accompagnée…"
             aide="Note pratique, visible dans l’agenda. Rien de clinique."
           />
+
+          <div className="rdv-bloc">
+            <span className="rdv-etiquette">Comment ça se passe</span>
+            <div className="choix">
+              {STATUTS.map((st) => (
+                <button
+                  key={st}
+                  aria-pressed={seance.statut === st}
+                  onClick={() => changerStatut(st)}
+                >
+                  {LIBELLE_STATUT[st]}
+                </button>
+              ))}
+            </div>
+            <p className="aide">{AIDE_STATUT[seance.statut]}</p>
+          </div>
+
+          <div className="rdv-bloc">
+            <span className="rdv-etiquette">Où</span>
+            <div className="choix">
+              {PRESENCES.map((m) => (
+                <button
+                  key={m.cle}
+                  aria-pressed={seance.modePresence === m.cle}
+                  onClick={() => majSeance(seance.id, { modePresence: m.cle })}
+                >
+                  {m.cle === 'visio' ? <IconeVisio taille={14} /> : <IconeAgenda taille={14} />}
+                  {m.libelle}
+                </button>
+              ))}
+            </div>
+            {seance.modePresence === 'visio' && (
+              reglages.lienVisioParDefaut.trim() ? (
+                <a
+                  className="btn petit bloc"
+                  style={{ marginTop: 8 }}
+                  href={reglages.lienVisioParDefaut}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <IconeVisio taille={15} />
+                  Ouvrir la salle
+                </a>
+              ) : (
+                <p className="aide">
+                  Aucun lien de visioconférence dans les réglages.
+                </p>
+              )
+            )}
+          </div>
 
           <BlocEncaissement seance={seance} compact />
 

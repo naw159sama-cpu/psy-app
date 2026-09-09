@@ -372,3 +372,13 @@ export function IconeMicro({ taille = 16 }: Props) {
     </svg>
   )
 }
+
+/** Caméra : la séance à distance. */
+export function IconeVisio({ taille = 16 }: Props) {
+  return (
+    <svg {...base(taille)}>
+      <rect x="2.8" y="6.4" width="12.4" height="11.2" rx="2.4" />
+      <path d="m15.2 10.6 5-2.6v8l-5-2.6Z" />
+    </svg>
+  )
+}

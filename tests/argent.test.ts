@@ -17,6 +17,8 @@ function seance(champs: Partial<Seance> = {}): Seance {
     paye: false,
     modePaiement: null,
     datePaiement: null,
+    modePresence: 'presentiel',
+    description: '',
     note: '',
     noteMajLe: null,
     motifAnnulation: '',
@@ -177,4 +179,35 @@ test('les moyens sont classés du plus gros montant au plus petit', () => {
   assert.equal(lignes[0].moyen, 'sg')
   assert.equal(lignes[0].montant, 18000)
   assert.equal(lignes[1].moyen, 'ccp')
+})
+
+/* ---------------- Le statut « en retard » ---------------- */
+
+test('une séance en retard n’est pas encore due', () => {
+  // La personne est attendue : rien n'est dû tant que la séance n'a pas eu lieu.
+  assert.equal(estDue('retard'), false)
+  const s = seance({ statut: 'retard' })
+  assert.equal(montantDu(s), 0)
+  assert.equal(partPsy(s), 0)
+  assert.equal(partCabinet(s), 0)
+})
+
+test('le retard ne fausse ni le bilan ni les encaissements', () => {
+  const b = bilan([
+    seance({ id: 'a', statut: 'retard' }),
+    seance({ id: 'b', statut: 'effectue', paye: true }),
+  ])
+  assert.equal(b.nbDues, 1)
+  assert.equal(b.total, 6000)
+  const lignes = encaissementsParMoyen([
+    seance({ statut: 'retard', paye: true, modePaiement: 'ccp', datePaiement: '2026-09-03' }),
+  ], '2026-09')
+  assert.equal(lignes.length, 0)
+})
+
+test('une séance en retard devenue effectuée devient due', () => {
+  const enRetard = seance({ statut: 'retard' })
+  const arrivee = { ...enRetard, statut: 'effectue' as const }
+  assert.equal(montantDu(enRetard), 0)
+  assert.equal(montantDu(arrivee), 6000)
 })

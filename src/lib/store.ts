@@ -6,7 +6,7 @@ import { MODELES_DEFAUT } from './rappels'
 import { aujourdhui } from './dates'
 
 const CLE = 'psy-app:donnees'
-export const VERSION = 5
+export const VERSION = 6
 
 /**
  * Les moyens d'encaissement d'usage courant. Les identifiants des quatre
@@ -74,6 +74,7 @@ export function normaliserPatient(p: Patient): Patient {
 export function normaliserSeance(s: Seance): Seance {
   return {
     ...s,
+    modePresence: s.modePresence === 'visio' ? 'visio' : 'presentiel',
     description: typeof s.description === 'string' ? s.description : '',
     etatObserve: typeof s.etatObserve === 'string' ? s.etatObserve : '',
     note: typeof s.note === 'string' ? s.note : '',
@@ -216,6 +217,7 @@ export function ajouterSeance(
     paye: false,
     modePaiement: null,
     datePaiement: null,
+    modePresence: 'presentiel',
     description: '',
     etatObserve: '',
     note: '',

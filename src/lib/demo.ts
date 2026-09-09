@@ -156,6 +156,8 @@ export function genererDemo(): Donnees {
         tarif: reglages.tarifDefaut,
         partPsyPct: reglages.partPsyPct,
         paye: faite && (j + c) % 9 !== 0,
+        // Une séance sur cinq se fait à distance.
+        modePresence: (j + c) % 5 === 2 ? 'visio' : 'presentiel',
         modePaiement: faite ? MOYENS[(j + c) % MOYENS.length] : null,
         // Un règlement sur quatre arrive quelques jours après la séance :
         // c'est ce que la vraie vie fait, et le récapitulatif doit le montrer.

@@ -5,7 +5,7 @@ import BoutonRappel from './BoutonRappel'
 import BlocEncaissement from './BlocEncaissement'
 import ClotureSeance from './ClotureSeance'
 import ChampDicte from './ChampDicte'
-import type { Seance, StatutSeance } from '../lib/types'
+import type { ModePresence, Seance, StatutSeance } from '../lib/types'
 import { useDonnees, majSeance, supprimerSeance, deplacerSeance, patient } from '../lib/store'
 import { dateLongue } from '../lib/dates'
 import { da, initiales } from '../lib/format'
@@ -14,10 +14,17 @@ import {
   AIDE_STATUT, LIBELLE_STATUT, nomAffiche,
 } from '../lib/affichage'
 import {
-  Chevron, IconeCabinet, IconePortefeuille, IconeRecu,
+  Chevron, IconeCabinet, IconePortefeuille, IconeRecu, IconeVisio,
 } from './Icones'
 
-const STATUTS: StatutSeance[] = ['prevu', 'effectue', 'absent', 'annule_delai', 'annule_hors_delai']
+const STATUTS: StatutSeance[] = [
+  'prevu', 'retard', 'effectue', 'absent', 'annule_delai', 'annule_hors_delai',
+]
+
+const PRESENCES: Array<{ cle: ModePresence; libelle: string }> = [
+  { cle: 'presentiel', libelle: 'Au cabinet' },
+  { cle: 'visio', libelle: 'À distance' },
+]
 
 interface Props {
   seanceId: string
@@ -80,6 +87,34 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
         </button>
       )}
 
+      <section style={{ marginBottom: 16 }}>
+        <div className="entete-section"><h3>Où se passe la séance</h3></div>
+        <div className="choix">
+          {PRESENCES.map((m) => (
+            <button
+              key={m.cle}
+              aria-pressed={seance.modePresence === m.cle}
+              onClick={() => majSeance(seanceId, { modePresence: m.cle })}
+            >
+              {m.cle === 'visio' ? <IconeVisio taille={14} /> : <IconeCabinet />}
+              {m.libelle}
+            </button>
+          ))}
+        </div>
+        {seance.modePresence === 'visio' && reglages.lienVisioParDefaut.trim() && (
+          <a
+            className="btn bloc"
+            style={{ marginTop: 10 }}
+            href={reglages.lienVisioParDefaut}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <IconeVisio taille={16} />
+            Ouvrir la salle
+          </a>
+        )}
+      </section>
+
       <ChampDicte
         id="seance-description"
         label="Description du rendez-vous"
@@ -89,7 +124,8 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
         aide="Note pratique, visible dans l’agenda. Rien de clinique."
       />
 
-      {p && seance.statut === 'prevu' && <BoutonRappel seance={seance} patient={p} />}
+      {p && (seance.statut === 'prevu' || seance.statut === 'retard')
+        && <BoutonRappel seance={seance} patient={p} />}
 
       <section>
         <div className="entete-section"><h3>Comment s’est passée la séance</h3></div>

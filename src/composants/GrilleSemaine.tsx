@@ -74,7 +74,7 @@ export default function GrilleSemaine({ debut, aujourdHui, libelle, onOuvrirJour
                   return (
                     <span
                       key={s.id}
-                      className={`gs-rdv t${s.creneau % 4}${manquee ? ' manquee' : ''}`}
+                      className={`gs-rdv t${s.creneau % 4}${manquee ? ' manquee' : ''}${s.modePresence === 'visio' ? ' visio' : ''}`}
                     >
                       <span className="gs-heure">
                         {reglages.creneaux[s.creneau]?.debut ?? '--:--'}
