@@ -107,7 +107,28 @@ Les tests utilisent le lanceur intégré de Node (aucune dépendance). Toute mod
 - Les teintes viennent de `--bulle-0` à `--bulle-9`, posées par les classes
   `.tb0` à `.tb9`. Un thème garde sa teinte quand les effectifs changent.
 
+## Règles de « Mon espace »
+
+- Cette section est pour la praticienne, pas pour ses patients. Rien n'y est
+  enregistré : aucun exercice ne laisse de trace dans le store.
+- Un exercice se déduit **entièrement du temps écoulé**, relu à l'horloge
+  (`Date.now()`). Ne jamais recompter au fil des battements : c'est ce qui
+  faisait rester la respiration sur « Inspirez » pendant trois minutes.
+- Deux formes, et deux seulement : `phases` (respiration, en boucle jusqu'à
+  `minutes`) ou `etapes` (guidé, joué une fois). Jamais les deux, le test
+  `chaque exercice est jouable…` le vérifie.
+- La durée d'animation du cercle suit celle du temps en cours. Une valeur figée
+  dans la feuille de style ferait mentir le geste dès qu'un temps change.
+- Les textes ne prescrivent rien de clinique et ne promettent aucun effet.
+  « Sans forcer, et sans jamais aller dans la douleur » pour tout ce qui touche
+  au corps.
+
 ## Écueils connus
+
+- **Ne jamais modifier une `ref` dans une fonction de mise à jour d'état.**
+  React peut rejouer la file de mises à jour — et le fait systématiquement sous
+  `StrictMode`. L'effet de bord est alors appliqué deux fois, ou annulé.
+  C'était la cause du minuteur de respiration bloqué.
 
 - `localStorage` peut être vidé par le navigateur. La sauvegarde manuelle est le seul
   filet : ne pas dégrader ce parcours.

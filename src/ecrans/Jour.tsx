@@ -252,18 +252,18 @@ export default function Jour({
         </section>
       )}
 
-      <section className="carte-souffle">
-        <div className="souffle-gauche">
+      <button className="carte-souffle" onClick={onSouffle}>
+        <span className="souffle-gauche">
           <span className="disque-souffle"><IconeSouffle taille={19} /></span>
-          <div style={{ minWidth: 0 }}>
-            <h4>Sas de décompression</h4>
-            <p>Respiration guidée · 3 min</p>
-          </div>
-        </div>
-        <button className="btn-lecture" aria-label="Lancer la respiration guidée" onClick={onSouffle}>
+          <span style={{ minWidth: 0 }}>
+            <h4>Mon espace</h4>
+            <p>Respirer, se poser · de 1 à 5 minutes</p>
+          </span>
+        </span>
+        <span className="btn-lecture" aria-hidden>
           <IconeLecture taille={17} />
-        </button>
-      </section>
+        </span>
+      </button>
 
       {reglages.masquerNoms && (
         <div className="note-contexte terre">

@@ -11,7 +11,9 @@ import FeuilleChoixPatient from './composants/FeuilleChoixPatient'
 import FeuilleNouveauPatient from './composants/FeuilleNouveauPatient'
 import FeuilleRappels from './composants/FeuilleRappels'
 import FeuilleJour from './composants/FeuilleJour'
-import FeuilleSouffle from './composants/FeuilleSouffle'
+import FeuilleEspace from './composants/FeuilleEspace'
+import LecteurExercice from './composants/LecteurExercice'
+import { trouverExercice } from './lib/exercices'
 import {
   IconeAgenda, IconeArgent, IconeCloche, IconeJour, IconeOeil, IconePatients,
   IconePlus, IconeReglages, IconeRetour,
@@ -31,7 +33,8 @@ type Panneau =
   | { type: 'nouveau-patient' }
   | { type: 'rappels' }
   | { type: 'jour'; date: string }
-  | { type: 'souffle' }
+  | { type: 'espace' }
+  | { type: 'exercice'; id: string }
   | null
 
 const ONGLETS: Array<{ cle: Onglet; libelle: string; Icone: typeof IconeJour }> = [
@@ -231,7 +234,7 @@ export default function App() {
             rappelsRestants={rappelsRestants}
             rappelsUrgents={rappelsUrgents}
             jourARappeler={jourARappeler}
-            onSouffle={() => setPanneau({ type: 'souffle' })}
+            onSouffle={() => setPanneau({ type: 'espace' })}
           />
         ) : onglet === 'agenda' ? (
           <Agenda
@@ -308,9 +311,26 @@ export default function App() {
           onCreneauLibre={creneauLibre}
         />
       )}
-      {panneau?.type === 'souffle' && (
-        <FeuilleSouffle onFermer={() => setPanneau(null)} />
+      {panneau?.type === 'espace' && (
+        <FeuilleEspace
+          onFermer={() => setPanneau(null)}
+          onChoisir={(id) => setPanneau({ type: 'exercice', id })}
+        />
       )}
+      {panneau?.type === 'exercice' && (() => {
+        const e = trouverExercice(panneau.id)
+        // Revenir à la liste plutôt que de tout fermer : elle a demandé un
+        // exercice, pas la fin de sa pause.
+        return e
+          ? (
+            <LecteurExercice
+              exercice={e}
+              onRetour={() => setPanneau({ type: 'espace' })}
+              onQuitter={() => setPanneau(null)}
+            />
+          )
+          : null
+      })()}
     </div>
   )
 }

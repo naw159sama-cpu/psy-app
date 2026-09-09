@@ -3043,3 +3043,215 @@ body { background: #eef3f6; }
 .themes-ajout { display: flex; gap: 8px; align-items: stretch; }
 .themes-ajout input { flex: 1; min-width: 0; }
 .themes-ajout .btn { flex: 0 0 auto; }
+
+/* =========================================================================
+   Mon espace — les exercices de la praticienne
+   ========================================================================= */
+
+:root {
+  --violet-pale: #efeaff;
+  --violet-texte: #5b3fa8;
+  --violet-bord: #ddd0ff;
+}
+
+/* ---------- La carte d'entrée, sur l'accueil ---------- */
+
+/* Devenue un bouton : c'est toute la carte qui ouvre l'espace, pas seulement
+   le petit rond de lecture. */
+.carte-souffle {
+  width: 100%;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.carte-souffle h4 { margin: 0; }
+.carte-souffle .btn-lecture { pointer-events: none; }
+
+/* ---------- Les cartes du choix ---------- */
+
+.exo-carte {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--e-bord);
+  border-radius: 18px;
+  background: var(--e-pale);
+  color: var(--texte);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .18s var(--sortie), box-shadow .22s ease;
+}
+.exo-carte:hover { transform: translateY(-2px); box-shadow: var(--ombre-carte); }
+.exo-carte:active { transform: scale(.985); }
+
+.exo-carte.sauge { --e-pale: var(--sauge-pale); --e-texte: var(--sauge-texte); --e-bord: var(--sauge-bord); }
+.exo-carte.ardoise { --e-pale: var(--ardoise-pale); --e-texte: var(--ardoise-texte); --e-bord: var(--ardoise-bord); }
+.exo-carte.terre { --e-pale: var(--terre-pale); --e-texte: var(--terre-texte); --e-bord: var(--terre-bord); }
+.exo-carte.ambre { --e-pale: var(--ambre-pale); --e-texte: var(--ambre-texte); --e-bord: var(--ambre-bord); }
+.exo-carte.violet { --e-pale: var(--violet-pale); --e-texte: var(--violet-texte); --e-bord: var(--violet-bord); }
+.exo-carte.peche { --e-pale: var(--peche-pale); --e-texte: var(--peche-texte); --e-bord: rgba(116, 69, 58, .16); }
+
+.exo-disque {
+  flex: 0 0 auto;
+  display: grid; place-items: center;
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  background: var(--blanc);
+  color: var(--e-texte);
+}
+
+.exo-corps { display: grid; gap: 3px; min-width: 0; flex: 1; }
+
+.exo-titre {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: .95rem; font-weight: 700;
+  color: var(--e-texte);
+}
+.exo-duree {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--blanc);
+  font-size: .7rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.exo-sous { font-size: .8rem; color: var(--e-texte); opacity: .82; }
+.exo-quand { font-size: .78rem; color: var(--texte-doux); line-height: 1.45; }
+
+.exo-lecture {
+  flex: 0 0 auto;
+  align-self: center;
+  display: grid; place-items: center;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--blanc);
+  color: var(--e-texte);
+}
+
+/* ---------- Le plein écran ---------- */
+
+.souffle-plein { gap: 22px; padding: 0 22px; }
+
+.plein-avance {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, .12);
+}
+.plein-avance span {
+  display: block; height: 100%;
+  background: var(--sauge-clair);
+  transition: width .3s linear;
+}
+
+.plein-fermer {
+  position: absolute; top: 16px; right: 16px;
+  display: grid; place-items: center;
+  width: 44px; height: 44px;
+  border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, .1);
+  color: var(--blanc);
+  cursor: pointer;
+}
+.plein-fermer:hover { background: rgba(255, 255, 255, .18); }
+
+.plein-titre {
+  position: absolute; top: 24px; left: 22px;
+  margin: 0;
+  font-size: .84rem; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .58);
+}
+
+/* ---------- Respiration ---------- */
+
+.souffle-cercle {
+  flex-direction: column;
+  gap: 6px;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(.4, 0, .5, 1);
+  text-align: center;
+  padding: 0 18px;
+}
+.souffle-cercle .cercle-libelle { font-size: 1.02rem; line-height: 1.3; }
+.souffle-cercle .cercle-compte {
+  font-size: 1.9rem; font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, .62);
+}
+/* Le geste commande l'échelle : inspirer gonfle, expirer dégonfle, retenir tient. */
+.souffle-cercle.inspire { transform: scale(1.26); }
+.souffle-cercle.expire { transform: scale(.84); }
+.souffle-cercle.tenu { transform: scale(1.26); }
+/* En pause, le cercle s'immobilise là où il est. */
+.souffle-cercle.fige { transition-duration: 0s !important; }
+
+/* ---------- Exercice guidé ---------- */
+
+.etape-points {
+  display: flex; gap: 7px;
+  list-style: none; margin: 0; padding: 0;
+}
+.etape-points li {
+  width: 26px; height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .18);
+  transition: background .3s ease;
+}
+.etape-points li.active { background: var(--sauge-clair); }
+.etape-points li.passee { background: rgba(255, 255, 255, .45); }
+
+.etape-carte {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px 22px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid rgba(255, 255, 255, .1);
+  text-align: center;
+  animation: monteEtape .45s var(--sortie) backwards;
+}
+.etape-rang {
+  display: block;
+  font-size: .72rem; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  color: var(--sauge-clair);
+}
+.etape-carte h3 {
+  margin: 8px 0 10px;
+  font-size: 1.25rem; font-weight: 700; line-height: 1.25;
+  color: var(--blanc);
+}
+.etape-carte p {
+  margin: 0;
+  font-size: .92rem; line-height: 1.6;
+  color: rgba(255, 255, 255, .78);
+}
+
+.etape-jauge {
+  margin-top: 18px;
+  height: 4px; border-radius: 99px;
+  background: rgba(255, 255, 255, .12);
+  overflow: hidden;
+}
+.etape-jauge span {
+  display: block; height: 100%; border-radius: 99px;
+  background: var(--sauge-clair);
+  transition: width .3s linear;
+}
+
+@keyframes monteEtape {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Les boutons du plein écran ---------- */
+
+.souffle-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.souffle-actions .btn-clair {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 44px;
+}

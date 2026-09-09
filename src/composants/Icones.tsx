@@ -274,6 +274,15 @@ export function IconeLecture({ taille = 18 }: Props) {
   )
 }
 
+export function IconePause({ taille = 18 }: Props) {
+  return (
+    <svg {...base(taille)} fill="currentColor" stroke="none">
+      <rect x="8" y="5.4" width="3" height="13.2" rx="1.2" />
+      <rect x="13.4" y="5.4" width="3" height="13.2" rx="1.2" />
+    </svg>
+  )
+}
+
 export function IconeSouffle({ taille = 20 }: Props) {
   return (
     <svg {...base(taille)}>
