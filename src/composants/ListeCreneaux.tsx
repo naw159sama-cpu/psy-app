@@ -57,7 +57,7 @@ export default function ListeCreneaux({ date, onOuvrirSeance, onCreneauLibre }: 
         if (!s) {
           return (
             <button key={i} className="carte-seance libre" onClick={() => onCreneauLibre(date, i)}>
-              <span className="bloc-heure">
+              <span className={`bloc-heure t${i % 4}`}>
                 <span className="heure">{c.debut}</span>
                 <span className="duree">{duree(c.debut, c.fin)}</span>
               </span>
@@ -112,7 +112,7 @@ export default function ListeCreneaux({ date, onOuvrirSeance, onCreneauLibre }: 
             className={`carte-seance${termine ? ' passee' : ''}`}
             onClick={() => onOuvrirSeance(s.id)}
           >
-            <span className="bloc-heure">
+            <span className={`bloc-heure t${i % 4}`}>
               <span className="heure">{c.debut}</span>
               <span className="duree">{duree(c.debut, c.fin)}</span>
             </span>

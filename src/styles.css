@@ -25,23 +25,42 @@
   --contour: #c4c7c7;
   --contour-doux: rgba(4, 5, 5, .06);
 
+  /* ---- Familles de couleur ----
+     Six teintes pastel chaudes, chacune avec son fond et son texte. Elles
+     portent le sens : vert ce qui est fait, rose ce qui presse, ambre ce qui
+     attend, bleu l'information, pêche et menthe les temps de respiration. */
+
   /* Sauge — ce qui est fait, ce qui va bien */
   --sauge: #56633a;
   --sauge-clair: #bdcd9a;
-  --sauge-pale: #dbe4cd;
+  --sauge-pale: #e2edda;
   --sauge-texte: #34461f;
+  --sauge-fonce: #4a6337;
   --sauge-sombre: #323628;
   --sauge-vif: #d9e9b5;
 
-  /* Terre cuite — ce qui presse */
-  --terre-pale: #ffdbd2;
-  --terre-texte: #723525;
+  /* Terre rosée — ce qui presse, ce qui manque */
+  --terre-pale: #fce8e2;
+  --terre-texte: #9e4a38;
+  --terre-sombre: #3a1b14;
   --terre-vif: #ba1a1a;
 
-  /* Bleu ardoise — l'argent */
-  --ardoise-pale: #e2e7ef;
-  --ardoise-texte: #24354c;
+  /* Ambre — ce qui attend, ce qui est à venir */
+  --ambre-pale: #fbf0d9;
+  --ambre-texte: #7a5b18;
+  --ambre-fonce: #693e1b;
+
+  /* Bleu — l'information, l'argent, le temps */
+  --ardoise-pale: #dce7fa;
+  --ardoise-texte: #3b5998;
+  --ardoise-clair: #82a7e2;
   --ardoise-vif: #466288;
+
+  /* Pêche et menthe — les temps de respiration */
+  --peche-pale: #f5e6dd;
+  --peche-texte: #74453a;
+  --menthe-pale: #d9eadb;
+  --menthe-texte: #3e5c31;
 
   /* Rayons */
   --r-accueil: 28px;
@@ -1927,3 +1946,139 @@ button, input, select, textarea { font: inherit; color: inherit; }
   flex: 0 0 auto;
   font-size: .72rem; font-weight: 600; color: var(--texte-doux);
 }
+
+/* =========================================================================
+   Mise en couleur
+   Le gris ne porte aucun sens : partout où une information a une nature,
+   elle prend la teinte de sa famille.
+   ========================================================================= */
+
+/* ---------- Blocs d'heure : une teinte par créneau de la journée ---------- */
+
+.bloc-heure.t0 { background: var(--sauge-pale); }
+.bloc-heure.t0 .heure { color: var(--sauge-texte); }
+.bloc-heure.t0 .duree { color: var(--sauge-fonce); }
+
+.bloc-heure.t1 { background: var(--ardoise-pale); }
+.bloc-heure.t1 .heure { color: var(--ardoise-texte); }
+.bloc-heure.t1 .duree { color: var(--ardoise-vif); }
+
+.bloc-heure.t2 { background: var(--terre-pale); }
+.bloc-heure.t2 .heure { color: var(--terre-texte); }
+.bloc-heure.t2 .duree { color: var(--terre-texte); opacity: .78; }
+
+.bloc-heure.t3 { background: var(--ambre-pale); }
+.bloc-heure.t3 .heure { color: var(--ambre-texte); }
+.bloc-heure.t3 .duree { color: var(--ambre-fonce); opacity: .8; }
+
+/* Une séance passée s'efface : la couleur ne sert plus à rien. */
+.carte-seance.passee .bloc-heure { background: var(--conteneur); }
+.carte-seance.passee .bloc-heure .heure { color: var(--texte-doux); }
+.carte-seance.passee .bloc-heure .duree { color: var(--texte-doux); }
+/* Un créneau libre reste neutre : il n'y a rien à qualifier. */
+.carte-seance.libre .bloc-heure { background: var(--conteneur); }
+.carte-seance.libre .bloc-heure .heure { color: var(--texte-doux); }
+
+/* ---------- Pastilles d'état ---------- */
+
+.puce.ok { background: var(--sauge-pale); color: var(--sauge-texte); }
+.puce.attente { background: var(--ambre-pale); color: var(--ambre-texte); }
+.puce.alerte { background: var(--terre-pale); color: var(--terre-texte); }
+.puce.neutre { background: var(--ardoise-pale); color: var(--ardoise-texte); }
+.puce.gris { background: var(--conteneur-max); color: var(--texte-doux); }
+
+/* Étiquettes et compteurs suivent les mêmes familles. */
+.etiquette.terre { background: var(--terre-pale); color: var(--terre-texte); }
+.etiquette.teal, .etiquette.sauge { background: var(--sauge-pale); color: var(--sauge-texte); }
+.pastille-date.urgente { background: var(--terre-pale); color: var(--terre-texte); }
+
+/* ---------- Disques d'icône ---------- */
+
+.disque.sauge { background: rgba(86, 99, 58, .14); color: var(--sauge-texte); }
+.disque.rose { background: rgba(158, 74, 56, .13); color: var(--terre-texte); }
+.disque.ambre { background: rgba(122, 91, 24, .14); color: var(--ambre-texte); }
+.disque.bleu { background: rgba(59, 89, 152, .13); color: var(--ardoise-texte); }
+.disque.peche { background: var(--peche-pale); color: var(--peche-texte); }
+
+/* Les deux cartes chiffrées d'une paire ne portent pas la même teinte. */
+.duo-cartes > .carte-stat:nth-child(odd) .disque {
+  background: rgba(86, 99, 58, .14); color: var(--sauge-texte);
+}
+.duo-cartes > .carte-stat:nth-child(even) .disque {
+  background: rgba(59, 89, 152, .13); color: var(--ardoise-texte);
+}
+
+/* ---------- Temps de respiration ---------- */
+
+.carte-souffle { background: var(--peche-pale); border-color: transparent; }
+.carte-souffle .disque-souffle { background: rgba(116, 69, 58, .14); color: var(--peche-texte); }
+.carte-souffle h3, .carte-souffle .souffle-titre { color: var(--terre-sombre); }
+.carte-souffle p, .carte-souffle .souffle-sous { color: var(--peche-texte); }
+.carte-souffle .btn-lecture {
+  background: rgba(116, 69, 58, .12);
+  color: var(--terre-sombre);
+  border-color: transparent;
+}
+
+/* ---------- Grille du mois : les pastilles prennent la teinte du créneau ---------- */
+
+.mois-rdv.t0 { background: var(--sauge-pale); color: var(--sauge-texte); }
+.mois-rdv.t1 { background: var(--ardoise-pale); color: var(--ardoise-texte); }
+.mois-rdv.t2 { background: var(--terre-pale); color: var(--terre-texte); }
+.mois-rdv.t3 { background: var(--ambre-pale); color: var(--ambre-texte); }
+.mois-rdv.manquee { background: var(--terre-pale); color: var(--terre-texte); }
+.mois-legende i { background: var(--sauge-pale); }
+.mois-legende i.manquee { background: var(--terre-pale); }
+
+/* ---------- Vue semaine : la ligne porte la couleur de son créneau ---------- */
+
+.js-rdv.t0 { background: var(--sauge-pale); }
+.js-rdv.t0 .js-heure { color: var(--sauge-texte); }
+.js-rdv.t0 .js-motif { color: var(--sauge-fonce); }
+.js-rdv.t1 { background: var(--ardoise-pale); }
+.js-rdv.t1 .js-heure { color: var(--ardoise-texte); }
+.js-rdv.t1 .js-motif { color: var(--ardoise-vif); }
+.js-rdv.t2 { background: var(--terre-pale); }
+.js-rdv.t2 .js-heure { color: var(--terre-texte); }
+.js-rdv.t2 .js-motif { color: var(--terre-texte); }
+.js-rdv.t3 { background: var(--ambre-pale); }
+.js-rdv.t3 .js-heure { color: var(--ambre-texte); }
+.js-rdv.t3 .js-motif { color: var(--ambre-fonce); }
+.js-rdv.manquee { background: var(--terre-pale); }
+.js-rdv.manquee .js-heure, .js-rdv.manquee .js-motif { color: var(--terre-texte); }
+.js-rdv .js-nom { color: var(--encre); }
+
+/* ---------- Fenêtre du jour : même code couleur que la semaine ---------- */
+
+.pile-jour > *:nth-child(1) .rdv-heure { color: var(--sauge-texte); }
+.pile-jour > *:nth-child(2) .rdv-heure { color: var(--ardoise-texte); }
+.pile-jour > *:nth-child(3) .rdv-heure { color: var(--ambre-texte); }
+.pile-jour > *:nth-child(4) .rdv-heure { color: var(--peche-texte); }
+.pile-jour > *:nth-child(1) { border-left: 3px solid var(--sauge-clair); }
+.pile-jour > *:nth-child(2) { border-left: 3px solid var(--ardoise-clair); }
+.pile-jour > *:nth-child(3) { border-left: 3px solid #e0c489; }
+.pile-jour > *:nth-child(4) { border-left: 3px solid #dcb9a6; }
+
+/* ---------- Tâches et rappels ---------- */
+
+.carte-rappel-entree.urgente { background: var(--ambre-pale); }
+.carte-rappel-entree.urgente .disque {
+  background: rgba(122, 91, 24, .16); color: var(--ambre-texte);
+}
+.carte-rappel-entree.urgente .entree-titre { color: var(--ambre-fonce); }
+.carte-rappel-entree.urgente .entree-sous { color: var(--ambre-texte); }
+
+.brief-reprise { background: var(--sauge-pale); }
+.brief-alerte.terre { background: var(--terre-pale); color: var(--terre-texte); }
+.brief-alerte.douce { background: var(--ardoise-pale); color: var(--ardoise-texte); }
+
+.rang.terre { background: rgba(252, 232, 226, .55); }
+.note-contexte { background: var(--ardoise-pale); border-color: transparent; color: var(--ardoise-texte); }
+.note-contexte svg { color: var(--ardoise-texte); }
+.note-contexte strong { color: #22355e; }
+
+/* ---------- Compteurs et jauges ---------- */
+
+.compteur-jauge span { background: var(--sauge); }
+.somme-jauge span { background: var(--sauge-clair); }
+.hero-jauge span { background: var(--sauge-clair); }

@@ -133,7 +133,7 @@ export default function GrilleMois({
               {duJour.slice(0, 3).map((s) => {
                 const manquee = s.statut === 'absent' || s.statut.startsWith('annule')
                 return (
-                  <span key={s.id} className={`mois-rdv${manquee ? ' manquee' : ''}`}>
+                  <span key={s.id} className={`mois-rdv t${s.creneau % 4}${manquee ? ' manquee' : ''}`}>
                     {reglages.creneaux[s.creneau]?.debut.slice(0, 2) ?? '--'}h {prenom(s.patientId)}
                   </span>
                 )
