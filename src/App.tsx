@@ -10,6 +10,7 @@ import FeuilleSeance from './composants/FeuilleSeance'
 import FeuilleChoixPatient from './composants/FeuilleChoixPatient'
 import FeuilleNouveauPatient from './composants/FeuilleNouveauPatient'
 import FeuilleRappels from './composants/FeuilleRappels'
+import FeuilleJour from './composants/FeuilleJour'
 import FeuilleSouffle from './composants/FeuilleSouffle'
 import {
   IconeAgenda, IconeArgent, IconeCloche, IconeJour, IconeOeil, IconePatients,
@@ -29,6 +30,7 @@ type Panneau =
   | { type: 'choix'; date: string; creneau: number }
   | { type: 'nouveau-patient' }
   | { type: 'rappels' }
+  | { type: 'jour'; date: string }
   | { type: 'souffle' }
   | null
 
@@ -229,7 +231,11 @@ export default function App() {
             onSouffle={() => setPanneau({ type: 'souffle' })}
           />
         ) : onglet === 'agenda' ? (
-          <Agenda onOuvrirSeance={ouvrirSeance} onCreneauLibre={creneauLibre} />
+          <Agenda
+            onOuvrirSeance={ouvrirSeance}
+            onCreneauLibre={creneauLibre}
+            onOuvrirJour={(date) => setPanneau({ type: 'jour', date })}
+          />
         ) : onglet === 'patients' ? (
           <Patients
             onOuvrirPatient={(id) => setVue({ type: 'patient', id })}
@@ -288,6 +294,14 @@ export default function App() {
       )}
       {panneau?.type === 'rappels' && (
         <FeuilleRappels onFermer={() => setPanneau(null)} onOuvrirSeance={ouvrirSeance} />
+      )}
+      {panneau?.type === 'jour' && (
+        <FeuilleJour
+          date={panneau.date}
+          onFermer={() => setPanneau(null)}
+          onOuvrirSeance={ouvrirSeance}
+          onCreneauLibre={creneauLibre}
+        />
       )}
       {panneau?.type === 'souffle' && (
         <FeuilleSouffle onFermer={() => setPanneau(null)} />

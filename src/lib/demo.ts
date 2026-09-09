@@ -68,6 +68,12 @@ const CONTENUS = [
   'Séance plus légère.\nA raconté un moment agréable du week-end.\nOn a nommé ce qui a rendu ce moment possible.',
 ]
 
+/** Notes pratiques d'agenda : ni cliniques, ni confidentielles. */
+const DESCRIPTIONS = [
+  '', '', 'Apporte le compte rendu du médecin', '',
+  'Vient accompagnée de sa sœur', '', '', 'Prévoir un peu plus de temps',
+]
+
 const REPRISES = [
   'Revenir sur la lettre qu’elle voulait écrire',
   'Reprendre l’exercice de respiration, voir s’il a été fait',
@@ -149,6 +155,7 @@ export function genererDemo(): Donnees {
         paye: faite && (j + c) % 9 !== 0,
         modePaiement: faite ? 'especes' : null,
         datePaiement: faite ? date : null,
+        description: DESCRIPTIONS[(j + c) % DESCRIPTIONS.length],
         etatObserve: redigee ? ETATS[(j + c) % ETATS.length] : '',
         note: redigee ? CONTENUS[(j + c) % CONTENUS.length] : '',
         aReprendre: redigee ? REPRISES[(j + c) % REPRISES.length] : '',
@@ -161,5 +168,5 @@ export function genererDemo(): Donnees {
     }
   }
 
-  return { version: 3, patients, seances, reglages, journalRappels: [] }
+  return { version: 4, patients, seances, reglages, journalRappels: [] }
 }

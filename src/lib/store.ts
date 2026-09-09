@@ -4,7 +4,7 @@ import { MODELES_DEFAUT } from './rappels'
 import { aujourdhui } from './dates'
 
 const CLE = 'psy-app:donnees'
-export const VERSION = 3
+export const VERSION = 4
 
 export const REGLAGES_DEFAUT: Reglages = {
   nomPraticienne: '',
@@ -58,6 +58,7 @@ export function normaliserPatient(p: Patient): Patient {
 export function normaliserSeance(s: Seance): Seance {
   return {
     ...s,
+    description: typeof s.description === 'string' ? s.description : '',
     etatObserve: typeof s.etatObserve === 'string' ? s.etatObserve : '',
     note: typeof s.note === 'string' ? s.note : '',
     aReprendre: typeof s.aReprendre === 'string' ? s.aReprendre : '',
@@ -197,6 +198,7 @@ export function ajouterSeance(
     paye: false,
     modePaiement: null,
     datePaiement: null,
+    description: '',
     etatObserve: '',
     note: '',
     aReprendre: '',

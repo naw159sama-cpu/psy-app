@@ -32,7 +32,8 @@ export default function ReglagesRappels() {
     const seanceFictive: Seance = {
       id: 'exemple', patientId: 'exemple', date: ajouterJours(aujourdhui(), 1), creneau: 0,
       statut: 'prevu', tarif: reglages.tarifDefaut, partPsyPct: reglages.partPsyPct,
-      paye: false, modePaiement: null, datePaiement: null, etatObserve: '', note: '',
+      paye: false, modePaiement: null, datePaiement: null, description: '',
+      etatObserve: '', note: '',
       aReprendre: '', noteMajLe: null, motifAnnulation: '', rappelEnvoyeLe: null,
       rappelModele: null, creeLe: '',
     }

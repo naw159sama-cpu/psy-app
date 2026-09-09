@@ -20,6 +20,8 @@ const CLE_VUE = 'psy-app:vue-agenda'
 interface Props {
   onOuvrirSeance: (seanceId: string) => void
   onCreneauLibre: (date: string, creneau: number) => void
+  /** Ouvre la journée dans une fenêtre, depuis la grille du mois. */
+  onOuvrirJour: (date: string) => void
 }
 
 function libelleSemaine(debut: string): string {
@@ -36,7 +38,7 @@ function vueEnregistree(): Vue {
   return v === 'jour' || v === 'semaine' || v === 'mois' ? v : 'semaine'
 }
 
-export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
+export default function Agenda({ onOuvrirSeance, onCreneauLibre, onOuvrirJour }: Props) {
   const { seances, reglages } = useDonnees()
   const today = aujourdhui()
 
@@ -58,6 +60,8 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
   const choisirJour = (date: string) => {
     setJour(date)
     if (date.slice(0, 7) !== mois) setMois(date.slice(0, 7))
+    // La journée s'ouvre en fenêtre : c'est le geste attendu d'un agenda.
+    onOuvrirJour(date)
   }
 
   /** Premier créneau libre d'une journée, pour l'appui long sur la grille. */
@@ -154,7 +158,6 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
 
   if (vue === 'mois') {
     const jourDuMois = jour.slice(0, 7) === mois ? jour : `${mois}-01`
-    const chome = !reglages.joursTravail.includes(jourDeIso(jourDuMois))
     return (
       <>
         {segments}
@@ -186,24 +189,10 @@ export default function Agenda({ onOuvrirSeance, onCreneauLibre }: Props) {
           onMoisSuivant={() => setMois(ajouterMois(mois, 1))}
         />
 
-        <section>
-          <div className="entete-section">
-            <h3>{dateLongue(jourDuMois)}</h3>
-          </div>
-          {chome ? (
-            <div className="vide">
-              <span className="disque grand"><IconeAgenda taille={22} /></span>
-              <strong>Jour non travaillé</strong>
-              Touchez un autre jour de la grille.
-            </div>
-          ) : (
-            <ListeCreneaux
-              date={jourDuMois}
-              onOuvrirSeance={onOuvrirSeance}
-              onCreneauLibre={onCreneauLibre}
-            />
-          )}
-        </section>
+        <button className="btn bloc" onClick={() => onOuvrirJour(jourDuMois)}>
+          Ouvrir {dateLongue(jourDuMois)}
+        </button>
+
         <section className="duo-cartes">
           <div className="carte-stat">
             <div className="stat-entete">

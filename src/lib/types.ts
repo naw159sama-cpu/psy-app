@@ -63,6 +63,12 @@ export interface Seance {
   paye: boolean
   modePaiement: ModePaiement | null
   datePaiement: string | null
+  /**
+   * Note pratique attachée au rendez-vous : « apporte ses résultats »,
+   * « vient avec sa sœur ». Rien de clinique — cela se lit d'un coup d'œil
+   * dans l'agenda, avant même d'ouvrir le dossier.
+   */
+  description: string
   /** Clôture de séance — « État observé » : comment la personne est arrivée. */
   etatObserve: string
   /** Clôture de séance — « Contenu » : ce qui a été travaillé. */

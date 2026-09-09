@@ -1731,3 +1731,94 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-size: .83rem; line-height: 1.55; color: var(--texte-doux);
 }
 .dictee-avis strong { color: var(--texte); font-weight: 600; }
+
+/* -------------------------------------------------------------------------
+   Fenêtre du jour — la journée ouverte depuis la grille du mois
+   ------------------------------------------------------------------------- */
+
+.pile-jour { display: flex; flex-direction: column; gap: 9px; }
+
+.rdv-jour {
+  background: var(--blanc);
+  border: 1px solid var(--contour-doux);
+  border-radius: var(--r-douce);
+  box-shadow: var(--ombre-fine);
+  overflow: hidden;
+  transition: box-shadow .22s ease;
+}
+.rdv-jour.ouverte { box-shadow: var(--ombre-carte); border-color: var(--contour); }
+
+.rdv-tete {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; text-align: left;
+  background: none; border: 0;
+  padding: 12px 13px;
+  cursor: pointer;
+  transition: background .18s ease;
+}
+.rdv-tete:hover { background: var(--carte-basse); }
+.rdv-tete:active { background: var(--conteneur); }
+
+.rdv-heure {
+  flex: 0 0 44px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700; font-size: .88rem; letter-spacing: -.02em;
+  color: var(--encre);
+  line-height: 1.25;
+}
+.rdv-heure small { display: block; font-weight: 500; font-size: .7rem; color: var(--texte-doux); }
+
+.monogramme.petit {
+  flex: 0 0 32px; width: 32px; height: 32px;
+  font-size: .72rem;
+}
+
+.rdv-corps { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.rdv-nom {
+  font-size: .94rem; font-weight: 600; letter-spacing: -.015em;
+  color: var(--encre);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rdv-sous {
+  margin-top: 1px;
+  font-size: .77rem; color: var(--texte-doux);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rdv-fin { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.rdv-chevron {
+  color: var(--texte-doux);
+  display: inline-flex;
+  transition: transform .22s var(--sortie);
+}
+.rdv-chevron.ouvert { transform: rotate(180deg); }
+
+.rdv-details {
+  padding: 4px 13px 13px;
+  border-top: 1px solid var(--contour-doux);
+  animation: monte .28s var(--sortie) both;
+}
+.rdv-details .champ { margin-bottom: 10px; }
+
+.rdv-actions { display: flex; gap: 8px; }
+.rdv-actions .btn { flex: 1; text-decoration: none; }
+.rdv-impossible {
+  flex: 1;
+  display: flex; align-items: center;
+  padding: 0 4px;
+  font-size: .76rem; line-height: 1.35;
+  color: var(--texte-doux);
+}
+
+.rdv-libre {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; text-align: left;
+  background: transparent;
+  border: 1.5px dashed var(--contour);
+  border-radius: var(--r-douce);
+  padding: 12px 13px;
+  color: var(--texte-doux);
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease;
+}
+.rdv-libre:hover { background: var(--carte-basse); border-color: var(--texte-doux); }
+.rdv-libre .rdv-heure { color: var(--texte-doux); }

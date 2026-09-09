@@ -94,6 +94,15 @@ export default function FeuilleSeance({ seanceId, onFermer, onOuvrirPatient }: P
         </button>
       )}
 
+      <ChampDicte
+        id="seance-description"
+        label="Description du rendez-vous"
+        valeur={seance.description}
+        onChange={(v) => majSeance(seanceId, { description: v })}
+        placeholder="Apporte ses résultats, vient accompagnée…"
+        aide="Note pratique, visible dans l’agenda. Rien de clinique."
+      />
+
       {p && seance.statut === 'prevu' && <BoutonRappel seance={seance} patient={p} />}
 
       <section>

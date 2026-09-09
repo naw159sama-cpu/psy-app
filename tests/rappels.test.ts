@@ -43,6 +43,7 @@ function seance(champs: Partial<Seance> = {}): Seance {
   return {
     id: 's1', patientId: 'p1', date: '2026-09-09', creneau: 0, statut: 'prevu',
     tarif: 6000, partPsyPct: 50, paye: false, modePaiement: null, datePaiement: null,
+    description: '',
     etatObserve: '', note: '', aReprendre: '', noteMajLe: null, motifAnnulation: '',
     rappelEnvoyeLe: null, rappelModele: null, creeLe: '2026-09-01T00:00:00.000Z',
     ...champs,
