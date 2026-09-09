@@ -2570,3 +2570,201 @@ body { background: #eef3f6; }
    la couleur sert à repérer ce qui vient, pas ce qui est fait. */
 .carte-seance.passee::before,
 .carte-seance.passee:has(.bloc-heure)::before { background: var(--contour); }
+
+/* =========================================================================
+   Couleurs exactes des maquettes, section par section
+   ========================================================================= */
+
+:root {
+  /* Vert — ce qui est fait */
+  --sauge-pale: #e2efda;
+  --sauge-texte: #345927;
+  --sauge-fonce: #446a36;
+  --sauge-bord: #d0e5c5;
+
+  /* Corail — ce qui presse */
+  --terre-pale: #fde6e0;
+  --terre-texte: #b84a36;
+  --terre-bord: #f9d2c9;
+  --corail: #e76b55;
+  --corail-fonce: #d45a45;
+
+  /* Bleu — l'information */
+  --ardoise-pale: #e0eaff;
+  --ardoise-texte: #2c579b;
+  --ardoise-bord: #ccddfe;
+  --ardoise-clair: #9cb8e8;
+
+  /* Ambre — ce qui attend */
+  --ambre-pale: #fef4dc;
+  --ambre-texte: #996c10;
+  --ambre-bord: #f3dc82;
+
+  /* Violet — la télé-consultation */
+  --violet-pale: #efeaff;
+  --violet-texte: #5b3fa8;
+  --violet-bord: #ddd0ff;
+
+  /* Sombres : chaque écran a le sien dans les maquettes */
+  --sombre-journee: #2e3c3e;
+  --sombre-finances: #1c1917;
+  --teal-profond: #163332;
+  --teal-clair: #a7f3d0;
+}
+
+/* ---------- Fond bicolore, propre à chaque écran ---------- */
+
+.app {
+  background: linear-gradient(180deg, #fff7f2 0%, #faf7f2 40%, #edf3f8 100%);
+  background-attachment: fixed;
+  transition: background 1s ease;
+}
+.app[data-ecran="agenda"] {
+  background: linear-gradient(180deg, #fff3ea 0%, #f9f6f2 42%, #e7eff8 100%);
+  background-attachment: fixed;
+}
+.app[data-ecran="finances"] {
+  background: linear-gradient(175deg, #fff4ee 0%, #faf4f0 25%, #eff4f9 65%, #e6eff8 100%);
+  background-attachment: fixed;
+}
+.app[data-ecran="patients"] {
+  background: linear-gradient(180deg, #fff4ec 0%, #faf1ec 22%, #eef5f2 58%, #e6eef7 100%);
+  background-attachment: fixed;
+}
+.app[data-ecran="reglages"] {
+  background: linear-gradient(180deg, #fff5ec 0%, #fdfbf7 30%, #eaf2ed 70%, #e6eef7 100%);
+  background-attachment: fixed;
+}
+
+/* La barre du haut prend la teinte du haut de son écran. */
+.barre-haut { background: rgba(255, 247, 242, .92); }
+.app[data-ecran="agenda"] .barre-haut { background: rgba(255, 243, 234, .92); }
+.app[data-ecran="finances"] .barre-haut { background: rgba(255, 244, 238, .92); }
+.app[data-ecran="patients"] .barre-haut { background: rgba(255, 244, 236, .92); }
+.app[data-ecran="reglages"] .barre-haut { background: rgba(255, 245, 236, .92); }
+
+/* ---------- Pastilles : fond, texte et bordure, comme dans les maquettes ---------- */
+
+.puce, .bulle, .etiquette { border: 1px solid transparent; }
+
+.puce.ok, .bulle.verte, .etiquette.sauge {
+  background: var(--sauge-pale); color: var(--sauge-texte); border-color: var(--sauge-bord);
+}
+.puce.alerte, .bulle.rouge, .etiquette.terre {
+  background: var(--terre-pale); color: var(--terre-texte); border-color: var(--terre-bord);
+}
+.puce.neutre, .bulle.bleue {
+  background: var(--ardoise-pale); color: var(--ardoise-texte); border-color: var(--ardoise-bord);
+}
+.puce.attente {
+  background: var(--ambre-pale); color: var(--ambre-texte); border-color: var(--ambre-bord);
+}
+.bulle.verte .point { background: var(--sauge-fonce); }
+.bulle.rouge .point { background: var(--corail); }
+.bulle.bleue .point { background: var(--ardoise-texte); }
+
+/* ---------- Le corail des maquettes pour l'action principale ---------- */
+
+.fab {
+  background: var(--corail);
+  box-shadow: 0 14px 30px -12px rgba(231, 107, 85, .65), 0 4px 10px -4px rgba(4, 5, 5, .18);
+}
+.fab:hover { background: var(--corail-fonce); }
+.lien-section { color: var(--terre-texte); }
+
+/* ---------- Blocs sombres, un par écran ---------- */
+
+.carte-active { background: var(--sombre-journee); }
+.carte-active .badge-live { background: rgba(226, 239, 218, .16); color: #bfe6c8; }
+
+/* Le bloc des honoraires : vert profond et jauge menthe. */
+.carte-somme {
+  background: linear-gradient(155deg, #234a44 0%, var(--teal-profond) 60%, #10231f 100%);
+}
+.carte-somme .unite, .carte-somme .somme-note { color: var(--teal-clair); }
+.carte-somme .somme-jauge span {
+  background: linear-gradient(90deg, #5eead4 0%, var(--teal-clair) 100%);
+}
+.carte-somme .somme-badge { background: rgba(167, 243, 208, .14); color: var(--teal-clair); }
+
+/* La carte bleue de l'agenda. */
+.carte-stat.pleine {
+  background: linear-gradient(150deg, #6b8cd8 0%, #5c80cf 45%, #345aa2 100%);
+  box-shadow: 0 12px 26px -12px rgba(52, 90, 162, .6);
+}
+
+/* ---------- Boutons d'action sombres, comme dans Finances ---------- */
+
+.carte-ligne .btn.principal.petit,
+.rappel-actions .btn.principal {
+  background: var(--sombre-finances);
+  border-color: var(--sombre-finances);
+  box-shadow: 0 3px 10px -4px rgba(28, 25, 23, .5);
+}
+.carte-ligne .btn.principal.petit:hover,
+.rappel-actions .btn.principal:hover { background: #2c2926; border-color: #2c2926; }
+
+/* ---------- Rangées de détail ---------- */
+
+.rang-lib .pastille-point { background: var(--sauge-fonce); }
+.rang.terre { background: transparent; }
+.rang.terre .rang-lib { color: var(--terre-texte); }
+.rang.terre .etiquette {
+  background: var(--terre-pale); color: var(--terre-texte); border-color: var(--terre-bord);
+}
+
+/* ---------- Créneaux et liserés reprennent les mêmes teintes ---------- */
+
+.bloc-heure.t0 { background: var(--sauge-pale); }
+.bloc-heure.t0 .heure { color: var(--sauge-texte); }
+.bloc-heure.t1 { background: var(--ardoise-pale); }
+.bloc-heure.t1 .heure { color: var(--ardoise-texte); }
+.bloc-heure.t2 { background: var(--terre-pale); }
+.bloc-heure.t2 .heure { color: var(--terre-texte); }
+.bloc-heure.t3 { background: var(--ambre-pale); }
+.bloc-heure.t3 .heure { color: var(--ambre-texte); }
+
+.carte-seance::before { background: var(--sauge-fonce); }
+.carte-seance:has(.bloc-heure.t1)::before { background: var(--ardoise-texte); }
+.carte-seance:has(.bloc-heure.t2)::before { background: var(--corail); }
+.carte-seance:has(.bloc-heure.t3)::before { background: var(--ambre-bord); }
+.carte-seance.passee::before,
+.carte-seance.passee:has(.bloc-heure)::before { background: var(--contour); }
+
+.carte-seance.libre { border-color: var(--ambre-bord); background: rgba(254, 244, 220, .4); }
+.carte-seance.libre:hover { background: var(--ambre-pale); }
+
+.gs-rdv.t0, .js-rdv.t0, .mois-rdv.t0 { background: var(--sauge-pale); color: var(--sauge-texte); }
+.gs-rdv.t1, .js-rdv.t1, .mois-rdv.t1 { background: var(--ardoise-pale); color: var(--ardoise-texte); }
+.gs-rdv.t2, .js-rdv.t2, .mois-rdv.t2 { background: var(--terre-pale); color: var(--terre-texte); }
+.gs-rdv.t3, .js-rdv.t3, .mois-rdv.t3 { background: var(--ambre-pale); color: var(--ambre-texte); }
+
+/* ---------- Sas de respiration : pêche, comme la maquette ---------- */
+
+.carte-souffle { background: linear-gradient(135deg, #fceae2 0%, #fbe2d8 100%); }
+.carte-souffle .disque-souffle { background: #fff; color: var(--terre-texte); }
+.carte-souffle .btn-lecture { background: #fff; color: var(--terre-texte); }
+
+/* ---------- Note de contexte : bleu de la famille ---------- */
+
+.note-contexte {
+  background: var(--ardoise-pale);
+  border: 1px solid var(--ardoise-bord);
+  color: var(--ardoise-texte);
+}
+.note-contexte svg { color: var(--ardoise-texte); }
+.note-contexte strong { color: #1f4380; }
+
+/* ---------- Encaissement et brief suivent les familles ---------- */
+
+.encaisse-resume { background: var(--sauge-pale); border: 1px solid var(--sauge-bord); }
+.encaisse-detail.ouvert { background: var(--ambre-pale); border: 1px solid var(--ambre-bord); }
+.brief-reprise { background: var(--sauge-pale); border: 1px solid var(--sauge-bord); }
+.brief-alerte.terre {
+  background: var(--terre-pale); color: var(--terre-texte); border: 1px solid var(--terre-bord);
+}
+.brief-alerte.douce {
+  background: var(--ardoise-pale); color: var(--ardoise-texte); border: 1px solid var(--ardoise-bord);
+}
+.carte-rappel-entree.urgente { background: var(--ambre-pale); border-color: var(--ambre-bord); }
+.carte-rappel-entree.urgente .entree-titre { color: var(--ambre-texte); }

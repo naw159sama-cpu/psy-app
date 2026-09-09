@@ -155,7 +155,7 @@ export default function App() {
       : { ...TITRES[onglet], legende: null as string | null, retour: null }
 
   return (
-    <div className="app">
+    <div className="app" data-ecran={vue.type === 'onglet' ? onglet : vue.type === 'rappels' ? 'accueil' : 'patients'}>
       <header className="barre-haut">
         <div className="identite">
           <div className="avatar-cabinet">{monogramme}</div>
