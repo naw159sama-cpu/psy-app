@@ -44,6 +44,7 @@ export default function FeuilleChoixPatient({ date, creneau, onFermer, onSeanceC
       telephone: telephone.trim(),
       dateNaissance: '',
       motif: '',
+      themes: [],
       adressePar: '',
       statut: 'actif',
       anamnese: '',

@@ -12,7 +12,7 @@ import { dicteeDisponible } from '../lib/dictee'
 /** Patient d'exemple, quand aucun dossier réel n'existe encore. */
 const EXEMPLE: Patient = {
   id: 'exemple', prenom: 'Amina', nom: 'B.', telephone: '0551 23 45 67',
-  dateNaissance: '1994-03-12', motif: '', adressePar: '', statut: 'actif',
+  dateNaissance: '1994-03-12', motif: '', themes: [], adressePar: '', statut: 'actif',
   anamnese: '', objectifs: [], canalRappel: 'whatsapp', consentementLe: null,
   messageNeutreRenforce: false, representant: null, tarifPerso: null, creeLe: '',
 }

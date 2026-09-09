@@ -68,6 +68,9 @@ export default function App() {
   const [onglet, setOnglet] = useState<Onglet>('accueil')
   const [vue, setVue] = useState<Vue>({ type: 'onglet' })
   const [panneau, setPanneau] = useState<Panneau>(null)
+  // Tenue ici parce que le bouton flottant en dépend : sur l'aperçu, il
+  // masquerait la légende du nuage.
+  const [vuePatients, setVuePatients] = useState<'liste' | 'apercu'>('liste')
 
   useEffect(() => {
     const e = localStorage.getItem('psy-app:echelle')
@@ -121,7 +124,7 @@ export default function App() {
   if (vue.type === 'onglet') {
     if (onglet === 'accueil' || onglet === 'agenda') {
       fab = { libelle: 'Nouveau rendez-vous', action: nouveauRendezVous }
-    } else if (onglet === 'patients') {
+    } else if (onglet === 'patients' && vuePatients === 'liste') {
       fab = { libelle: 'Nouveau patient', action: () => setPanneau({ type: 'nouveau-patient' }) }
     }
   }
@@ -240,6 +243,8 @@ export default function App() {
           <Patients
             onOuvrirPatient={(id) => setVue({ type: 'patient', id })}
             onNouveauPatient={() => setPanneau({ type: 'nouveau-patient' })}
+            vue={vuePatients}
+            onVue={setVuePatients}
           />
         ) : onglet === 'finances' ? (
           <Argent onOuvrirSeance={ouvrirSeance} />

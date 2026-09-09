@@ -25,6 +25,12 @@ export interface Patient {
   telephone: string
   dateNaissance: string // YYYY-MM-DD
   motif: string
+  /**
+   * Thèmes de consultation, pour pouvoir compter. Le motif dit ce qui est vrai
+   * pour cette personne-là ; les thèmes disent dans quelles familles elle
+   * entre. Une fiche peut en porter plusieurs.
+   */
+  themes: string[]
   adressePar: string
   statut: StatutPatient
   anamnese: string

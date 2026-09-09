@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import Feuille from './Feuille'
 import ChampDicte from './ChampDicte'
+import ChampThemes from './ChampThemes'
 import { ajouterPatient } from '../lib/store'
+import { cleTheme } from '../lib/themes'
 
 interface Props {
   onFermer: () => void
@@ -13,8 +15,16 @@ export default function FeuilleNouveauPatient({ onFermer, onCree }: Props) {
   const [nom, setNom] = useState('')
   const [telephone, setTelephone] = useState('')
   const [motif, setMotif] = useState('')
+  const [themes, setThemes] = useState<string[]>([])
 
   const valide = prenom.trim().length > 0 || nom.trim().length > 0
+
+  const basculerTheme = (t: string) => {
+    const cle = cleTheme(t)
+    setThemes((liste) => (liste.some((x) => cleTheme(x) === cle)
+      ? liste.filter((x) => cleTheme(x) !== cle)
+      : [...liste, t.trim()]))
+  }
 
   const creer = () => {
     if (!valide) return
@@ -24,6 +34,7 @@ export default function FeuilleNouveauPatient({ onFermer, onCree }: Props) {
       telephone: telephone.trim(),
       dateNaissance: '',
       motif: motif.trim(),
+      themes,
       adressePar: '',
       statut: 'actif',
       anamnese: '',
@@ -64,6 +75,7 @@ export default function FeuilleNouveauPatient({ onFermer, onCree }: Props) {
         onChange={setMotif}
         placeholder="Anxiété, deuil, suivi de l’enfant…"
       />
+      <ChampThemes themes={themes} motif={motif} onBasculer={basculerTheme} />
       <div className="btn-rang">
         <button className="btn" onClick={onFermer}>Annuler</button>
         <button className="btn corail" disabled={!valide} onClick={creer}>Créer le dossier</button>

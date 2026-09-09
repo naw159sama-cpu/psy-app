@@ -91,6 +91,22 @@ Les tests utilisent le lanceur intégré de Node (aucune dépendance). Toute mod
   séance, date, modèle, statut, rien de plus.
 - Toute règle de numéro s'écrit dans `src/lib/telephone.ts`, avec son test.
 
+## Règles des thèmes de consultation
+
+- Le `motif` reste un texte libre : il ne doit jamais devenir une liste fermée.
+  Les `themes` sont l'autre besoin, celui de compter, et vivent à côté.
+- Une fiche sans thème n'en reçoit **jamais** d'office. `themesDeduits()` devine
+  d'après le motif pour l'affichage du nuage, sans rien écrire dans le dossier.
+- Dans le nuage, l'**aire** du disque est proportionnelle à l'effectif — donc le
+  rayon suit la racine carrée. Ne jamais faire porter la valeur au diamètre :
+  une bulle deux fois plus large paraîtrait quatre fois plus nombreuse.
+- La longueur d'une jauge de légende ne dit que l'effectif : `.legende-nom`
+  garde une largeur fixe pour que toutes partent du même bord.
+- Le filtre par statut s'applique au nuage comme à la liste. Un chiffre affiché
+  doit toujours pouvoir être retrouvé en touchant sa bulle.
+- Les teintes viennent de `--bulle-0` à `--bulle-9`, posées par les classes
+  `.tb0` à `.tb9`. Un thème garde sa teinte quand les effectifs changent.
+
 ## Écueils connus
 
 - `localStorage` peut être vidé par le navigateur. La sauvegarde manuelle est le seul

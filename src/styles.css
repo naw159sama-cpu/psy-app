@@ -2792,3 +2792,254 @@ body { background: #eef3f6; }
   border-color: var(--violet-bord);
 }
 .gs-rdv.visio, .js-rdv.visio { box-shadow: inset 2px 0 0 var(--violet-texte); }
+
+/* =========================================================================
+   Nuage de thèmes — dix familles de couleur, une par motif de consultation
+   ========================================================================= */
+
+:root {
+  /* Chaque famille : le disque, son trait, et l'encre de son texte.
+     Le texte est toujours la version très foncée de la même teinte : le
+     contraste tient sur les dix, sans jamais passer au blanc. */
+  --bulle-0: #f4836b; --bulle-0-trait: #dd5c45; --bulle-0-texte: #6d2013;
+  --bulle-1: #85a8ea; --bulle-1-trait: #5079c4; --bulle-1-texte: #1d3c70;
+  --bulle-2: #8fcf9a; --bulle-2-trait: #57a967; --bulle-2-texte: #21532c;
+  --bulle-3: #f2c667; --bulle-3-trait: #d9a336; --bulle-3-texte: #714d0d;
+  --bulle-4: #a893ec; --bulle-4-trait: #7a5fd3; --bulle-4-texte: #392676;
+  --bulle-5: #6ed0c7; --bulle-5-trait: #34a89f; --bulle-5-texte: #0e4c47;
+  --bulle-6: #f19ac1; --bulle-6-trait: #d96a9d; --bulle-6-texte: #75284e;
+  --bulle-7: #e5a172; --bulle-7-trait: #ca7b45; --bulle-7-texte: #6a3812;
+  --bulle-8: #bacf72; --bulle-8-trait: #93ad44; --bulle-8-texte: #445317;
+  --bulle-9: #7fc7e8; --bulle-9-trait: #489dcb; --bulle-9-texte: #144c66;
+
+  /* Les dossiers sans thème : gris, pour ne pas prétendre dire quelque chose. */
+  --bulle-absente: #dfe3e7;
+  --bulle-absente-trait: #c0c7ce;
+  --bulle-absente-texte: #56606a;
+}
+
+/* Une seule classe pose les trois variables : tout le reste s'en sert. */
+.tb0 { --b: var(--bulle-0); --b-trait: var(--bulle-0-trait); --b-texte: var(--bulle-0-texte); }
+.tb1 { --b: var(--bulle-1); --b-trait: var(--bulle-1-trait); --b-texte: var(--bulle-1-texte); }
+.tb2 { --b: var(--bulle-2); --b-trait: var(--bulle-2-trait); --b-texte: var(--bulle-2-texte); }
+.tb3 { --b: var(--bulle-3); --b-trait: var(--bulle-3-trait); --b-texte: var(--bulle-3-texte); }
+.tb4 { --b: var(--bulle-4); --b-trait: var(--bulle-4-trait); --b-texte: var(--bulle-4-texte); }
+.tb5 { --b: var(--bulle-5); --b-trait: var(--bulle-5-trait); --b-texte: var(--bulle-5-texte); }
+.tb6 { --b: var(--bulle-6); --b-trait: var(--bulle-6-trait); --b-texte: var(--bulle-6-texte); }
+.tb7 { --b: var(--bulle-7); --b-trait: var(--bulle-7-trait); --b-texte: var(--bulle-7-texte); }
+.tb8 { --b: var(--bulle-8); --b-trait: var(--bulle-8-trait); --b-texte: var(--bulle-8-texte); }
+.tb9 { --b: var(--bulle-9); --b-trait: var(--bulle-9-trait); --b-texte: var(--bulle-9-texte); }
+
+.nuage-bulle.absente,
+.legende-ligne.absente {
+  --b: var(--bulle-absente);
+  --b-trait: var(--bulle-absente-trait);
+  --b-texte: var(--bulle-absente-texte);
+}
+
+/* ---------- La toile ---------- */
+
+.nuage { display: grid; gap: 14px; }
+
+.nuage-toile {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  touch-action: manipulation;
+}
+
+.nuage-bulle {
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity .3s ease;
+  animation: eclotBulle .55s var(--ressort) backwards;
+}
+.nuage-bulle.effacee { opacity: .3; }
+
+.nuage-disque {
+  fill: var(--b);
+  stroke: var(--b-trait);
+  stroke-width: 1.5;
+  transition: stroke-width .2s var(--sortie), filter .2s ease;
+}
+.nuage-bulle:hover .nuage-disque { stroke-width: 3; }
+.nuage-bulle.choisie .nuage-disque { stroke-width: 4; }
+.nuage-bulle:focus-visible { outline: none; }
+.nuage-bulle:focus-visible .nuage-disque { stroke-width: 4; stroke-dasharray: 5 3; }
+
+/* Un reflet en haut à gauche : le disque devient une bulle. */
+.nuage-reflet { fill: var(--blanc); opacity: .26; pointer-events: none; }
+
+.nuage-nombre,
+.nuage-nom {
+  fill: var(--b-texte);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  font-family: inherit;
+}
+.nuage-nombre { font-weight: 800; letter-spacing: -.02em; }
+.nuage-nom { font-weight: 600; opacity: .88; }
+
+@keyframes eclotBulle {
+  from { opacity: 0; transform: scale(.15); }
+  60% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+
+/* Les bulles respirent doucement, chacune à son rythme. */
+@keyframes flotteBulle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.nuage-flotte { animation-name: flotteBulle; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+
+/* ---------- La légende ---------- */
+
+.nuage-legende {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.legende-ligne {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--texte);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+.legende-ligne:hover { background: var(--conteneur); }
+.legende-ligne.choisie { background: var(--conteneur); border-color: var(--b-trait); }
+
+.legende-pastille {
+  flex: 0 0 auto;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--b);
+  border: 1.5px solid var(--b-trait);
+}
+
+/* Largeur fixe : sans elle, les jauges ne partiraient pas du même bord et
+   deux effectifs égaux donneraient deux barres de longueurs différentes. */
+.legende-nom {
+  flex: 0 0 38%;
+  max-width: 38%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .84rem;
+  font-weight: 600;
+}
+
+.legende-jauge {
+  flex: 1;
+  min-width: 24px;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--conteneur-haut);
+  overflow: hidden;
+}
+.legende-jauge span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--b);
+  transform-origin: left;
+  animation: glisseBarre .7s var(--sortie) both .2s;
+}
+
+.legende-nb {
+  flex: 0 0 auto;
+  min-width: 22px;
+  text-align: right;
+  font-size: .84rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--b-texte);
+}
+
+/* ---------- Le filtre par thème, au-dessus de la liste ---------- */
+
+.filtre-actif {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+  padding: 8px 8px 8px 13px;
+  border: 1px solid var(--contour-doux);
+  border-radius: 15px;
+  background: var(--carte-basse);
+  font-size: .84rem;
+  color: var(--texte-doux);
+  animation: eclot .3s var(--ressort) backwards;
+}
+.filtre-actif strong { color: var(--texte); }
+.filtre-actif button {
+  margin-left: auto;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--conteneur);
+  color: var(--texte-doux);
+  cursor: pointer;
+}
+.filtre-actif button:hover { background: var(--conteneur-max); }
+
+/* ---------- Le choix des thèmes dans une fiche ---------- */
+
+.champ-themes { display: grid; gap: 8px; }
+.champ-themes > label { margin: 0; }
+.champ-themes .aide { margin: 0; }
+
+.themes-choisis, .themes-choix { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.theme-puce {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--contour-doux);
+  border-radius: 99px;
+  background: var(--blanc);
+  color: var(--texte-doux);
+  font: inherit;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, transform .14s var(--ressort);
+}
+.theme-puce:hover { background: var(--conteneur); }
+.theme-puce:active { transform: scale(.95); }
+.theme-puce.choisie {
+  background: var(--encre-douce);
+  border-color: var(--encre-douce);
+  color: var(--blanc);
+  font-weight: 600;
+}
+.theme-puce.devine {
+  background: var(--ambre-pale);
+  border-color: var(--ambre-bord);
+  color: var(--ambre-texte);
+  font-weight: 600;
+}
+
+.themes-ajout { display: flex; gap: 8px; align-items: stretch; }
+.themes-ajout input { flex: 1; min-width: 0; }
+.themes-ajout .btn { flex: 0 0 auto; }

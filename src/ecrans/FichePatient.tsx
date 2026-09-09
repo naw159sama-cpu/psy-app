@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ChampDicte from '../composants/ChampDicte'
-import { useDonnees, majPatient, supprimerPatient } from '../lib/store'
+import ChampThemes from '../composants/ChampThemes'
+import { useDonnees, basculerTheme, majPatient, supprimerPatient } from '../lib/store'
 import { aujourdhui, dateCourte, age } from '../lib/dates'
 import { normaliserNumero } from '../lib/telephone'
 import { da, montantSeul } from '../lib/format'
@@ -250,6 +251,11 @@ export default function FichePatient({ patientId, onOuvrirSeance, onSupprime }: 
           label="Motif de consultation"
           valeur={p.motif}
           onChange={(v) => maj({ motif: v })}
+        />
+        <ChampThemes
+          themes={p.themes}
+          motif={p.motif}
+          onBasculer={(nom) => basculerTheme(patientId, nom)}
         />
         <div className="champ">
           <label htmlFor="fp-adresse">Adressé par</label>

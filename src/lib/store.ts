@@ -4,9 +4,10 @@ import type {
 } from './types'
 import { MODELES_DEFAUT } from './rappels'
 import { aujourdhui } from './dates'
+import { cleTheme } from './themes'
 
 const CLE = 'psy-app:donnees'
-export const VERSION = 6
+export const VERSION = 7
 
 /**
  * Les moyens d'encaissement d'usage courant. Les identifiants des quatre
@@ -62,6 +63,9 @@ export function normaliserPatient(p: Patient): Patient {
   return {
     ...p,
     objectifs: Array.isArray(p.objectifs) ? p.objectifs : [],
+    // Un dossier ouvert avant les thèmes n'en porte aucun. Le nuage les devine
+    // alors d'après le motif, sans jamais rien écrire dans la fiche.
+    themes: Array.isArray(p.themes) ? p.themes : [],
     // Sans consentement explicite, aucun rappel n'est proposé : « aucun » est
     // le seul défaut acceptable pour un dossier enregistré avant ce champ.
     canalRappel: p.canalRappel ?? 'aucun',
@@ -167,6 +171,23 @@ export function supprimerPatient(idPatient: string) {
 
 export function patient(idPatient: string): Patient | undefined {
   return etat.patients.find((p) => p.id === idPatient)
+}
+
+/**
+ * Ajoute un thème de consultation, ou le retire s'il y est déjà. Deux
+ * orthographes du même thème ne peuvent pas coexister sur une fiche : la clé
+ * les rapproche avant de décider.
+ */
+export function basculerTheme(idPatient: string, nom: string) {
+  const p = patient(idPatient)
+  const propre = nom.trim()
+  if (!p || !propre) return
+  const cle = cleTheme(propre)
+  const actuels = p.themes ?? []
+  const deja = actuels.some((t) => cleTheme(t) === cle)
+  majPatient(idPatient, {
+    themes: deja ? actuels.filter((t) => cleTheme(t) !== cle) : [...actuels, propre],
+  })
 }
 
 // --- Objectifs thérapeutiques ---
